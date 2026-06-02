@@ -1,0 +1,704 @@
+/* 전체 화면에서 브라우저 기본 여백을 제거하고 스마트미러 화면을 꽉 채웁니다. */
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #03070b;
+    --panel: rgba(9, 19, 28, 0.82);
+    --panel-soft: rgba(17, 35, 48, 0.62);
+    --line: rgba(116, 232, 255, 0.28);
+    --text: #f4fbff;
+    --muted: #9fb3bf;
+    --blue: #5ed7ff;
+    --green: #6effb5;
+    --shadow: 0 0 38px rgba(58, 205, 255, 0.16);
+    --mirror-scale: 1;
+    --mirror-rotation: 90deg;
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Pretendard", "Noto Sans KR", "Segoe UI", sans-serif;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+button {
+    font: inherit;
+}
+
+/* 1080x1920 세로형 스마트미러를 기준으로 한 메인 레이아웃입니다. */
+.mirror-screen {
+    width: 1080px;
+    height: 1920px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(var(--mirror-rotation)) scale(var(--mirror-scale));
+    transform-origin: center center;
+    padding: 42px 54px 42px;
+    display: grid;
+    grid-template-rows: 132px 1fr 124px;
+    gap: 24px;
+    background:
+        radial-gradient(circle at 18% 12%, rgba(94, 215, 255, 0.16), transparent 34%),
+        radial-gradient(circle at 82% 78%, rgba(110, 255, 181, 0.12), transparent 32%),
+        linear-gradient(180deg, #050b11 0%, #010305 100%);
+}
+
+/* 날짜, 시스템 이름, 시간을 좌우 균형 있게 배치합니다. */
+.top-bar {
+    display: grid;
+    grid-template-columns: 0.9fr 1.75fr 0.9fr;
+    align-items: center;
+    border-bottom: 1px solid var(--line);
+}
+
+.date-block,
+.time-block,
+.brand-block {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.time-block {
+    align-items: flex-end;
+}
+
+.brand-block {
+    align-items: center;
+    text-align: center;
+}
+
+.label,
+.system-mark,
+.card-heading p,
+.metric-card span,
+.feedback-card span {
+    margin: 0;
+    color: var(--muted);
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0;
+}
+
+.date-block strong,
+.time-block strong {
+    font-size: 36px;
+    line-height: 1;
+}
+
+.system-mark {
+    color: var(--green);
+}
+
+h1 {
+    margin: 0;
+    font-size: 38px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+/* 중앙 콘텐츠는 버튼에 따라 표시되는 앱 화면을 한 장씩 겹쳐 둡니다. */
+.view-stack {
+    position: relative;
+    min-height: 0;
+}
+
+.app-view {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(18px);
+    transition: opacity 0.24s ease, transform 0.24s ease;
+}
+
+.active-view {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+/* 운동 진행 화면은 운동 카드, 카메라 영역, 상태 패널로 구성합니다. */
+.main-layout {
+    display: grid;
+    grid-template-rows: 350px 1fr 246px;
+    gap: 22px;
+    min-height: 0;
+}
+
+.exercise-card,
+.status-panel,
+.camera-frame {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(12px);
+}
+
+.exercise-card {
+    padding: 30px 38px;
+    border-radius: 8px;
+}
+
+.card-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.accent-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 18px rgba(110, 255, 181, 0.85);
+}
+
+.exercise-card h2 {
+    margin: 0 0 14px;
+    font-size: 44px;
+    line-height: 1.18;
+}
+
+.exercise-description {
+    width: 88%;
+    margin: 0 0 20px;
+    color: #c7d8df;
+    font-size: 22px;
+    line-height: 1.55;
+}
+
+.exercise-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.exercise-meta div {
+    padding: 16px 20px;
+    border: 1px solid rgba(110, 255, 181, 0.22);
+    border-radius: 8px;
+    background: var(--panel-soft);
+}
+
+.exercise-meta span {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 17px;
+}
+
+.exercise-meta strong {
+    font-size: 28px;
+}
+
+.camera-area {
+    min-height: 760px;
+}
+
+.camera-frame {
+    position: relative;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 8px;
+    background:
+        linear-gradient(rgba(94, 215, 255, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94, 215, 255, 0.06) 1px, transparent 1px),
+        rgba(2, 8, 12, 0.88);
+    background-size: 42px 42px;
+}
+
+.camera-placeholder {
+    text-align: center;
+    z-index: 2;
+}
+
+.camera-placeholder span {
+    display: block;
+    margin-bottom: 18px;
+    color: var(--blue);
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.camera-placeholder strong {
+    display: block;
+    font-size: 50px;
+    margin-bottom: 14px;
+}
+
+.camera-placeholder p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 26px;
+}
+
+/* 카메라 placeholder 위에 관절 추적 느낌의 skeleton을 표시합니다. */
+.pose-guide {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0.62;
+}
+
+.joint,
+.bone {
+    position: absolute;
+    display: block;
+}
+
+.joint {
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--green);
+    border-radius: 50%;
+    background: rgba(3, 7, 11, 0.72);
+    box-shadow: 0 0 22px rgba(110, 255, 181, 0.55);
+}
+
+.bone {
+    height: 5px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(94, 215, 255, 0.18), rgba(110, 255, 181, 0.72));
+    transform-origin: left center;
+}
+
+.head {
+    top: 22%;
+    left: 50%;
+}
+
+.shoulder-left {
+    top: 34%;
+    left: 42%;
+}
+
+.shoulder-right {
+    top: 34%;
+    left: 58%;
+}
+
+.elbow-left {
+    top: 42%;
+    left: 34%;
+}
+
+.elbow-right {
+    top: 42%;
+    left: 66%;
+}
+
+.hand-left {
+    top: 54%;
+    left: 28%;
+}
+
+.hand-right {
+    top: 54%;
+    left: 72%;
+}
+
+.hip-left {
+    top: 58%;
+    left: 45%;
+}
+
+.hip-right {
+    top: 58%;
+    left: 55%;
+}
+
+.knee-left {
+    top: 75%;
+    left: 42%;
+}
+
+.knee-right {
+    top: 75%;
+    left: 58%;
+}
+
+.torso {
+    top: 47%;
+    left: 50%;
+    width: 230px;
+    transform: rotate(90deg) translateX(-50%);
+}
+
+.shoulders {
+    top: 35%;
+    left: 42%;
+    width: 170px;
+}
+
+.left-upper-arm {
+    top: 37%;
+    left: 35%;
+    width: 110px;
+    transform: rotate(-28deg);
+}
+
+.left-lower-arm {
+    top: 45%;
+    left: 29%;
+    width: 130px;
+    transform: rotate(-58deg);
+}
+
+.right-upper-arm {
+    top: 37%;
+    left: 59%;
+    width: 110px;
+    transform: rotate(28deg);
+}
+
+.right-lower-arm {
+    top: 45%;
+    left: 65%;
+    width: 130px;
+    transform: rotate(58deg);
+}
+
+.left-leg {
+    top: 60%;
+    left: 44%;
+    width: 180px;
+    transform: rotate(104deg);
+}
+
+.right-leg {
+    top: 60%;
+    left: 56%;
+    width: 180px;
+    transform: rotate(76deg);
+}
+
+.scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    background: linear-gradient(180deg, transparent, rgba(94, 215, 255, 0.18), transparent);
+    animation: scanMove 4s linear infinite;
+}
+
+.corner {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-color: var(--green);
+    opacity: 0.85;
+}
+
+.corner-left-top {
+    top: 26px;
+    left: 26px;
+    border-top: 4px solid;
+    border-left: 4px solid;
+}
+
+.corner-right-top {
+    top: 26px;
+    right: 26px;
+    border-top: 4px solid;
+    border-right: 4px solid;
+}
+
+.corner-left-bottom {
+    bottom: 26px;
+    left: 26px;
+    border-bottom: 4px solid;
+    border-left: 4px solid;
+}
+
+.corner-right-bottom {
+    right: 26px;
+    bottom: 26px;
+    border-right: 4px solid;
+    border-bottom: 4px solid;
+}
+
+/* 상태 패널은 하단에 크게 배치하여 세로형 화면에서 읽기 쉽게 만듭니다. */
+.status-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.35fr;
+    gap: 20px;
+    padding: 18px;
+    border-radius: 8px;
+}
+
+.metric-card,
+.feedback-card {
+    padding: 24px;
+    border: 1px solid rgba(94, 215, 255, 0.18);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.metric-card strong {
+    display: block;
+    margin: 14px 0;
+    font-size: 52px;
+    color: var(--green);
+}
+
+.metric-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 22px;
+}
+
+.progress-track {
+    width: 100%;
+    height: 12px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.progress-fill {
+    width: 92%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--blue), var(--green));
+}
+
+.feedback-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.feedback-card strong {
+    margin-top: 16px;
+    color: #ffffff;
+    font-size: 30px;
+    line-height: 1.35;
+}
+
+/* 하단 버튼은 스마트미러에서 멀리서도 누르기 쉽도록 크게 만듭니다. */
+.bottom-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+
+.bottom-actions button {
+    min-height: 104px;
+    border: 1px solid rgba(94, 215, 255, 0.35);
+    border-radius: 8px;
+    background: rgba(12, 28, 40, 0.92);
+    color: var(--text);
+    font-size: 32px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 0 26px rgba(94, 215, 255, 0.12);
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.bottom-actions button:hover {
+    transform: translateY(-3px);
+    border-color: var(--green);
+    background: rgba(18, 52, 60, 0.96);
+}
+
+.bottom-actions .primary-button {
+    border-color: rgba(110, 255, 181, 0.72);
+    background: linear-gradient(135deg, rgba(0, 155, 112, 0.92), rgba(15, 112, 145, 0.92));
+}
+
+.bottom-actions .active-action {
+    border-color: var(--green);
+    box-shadow: 0 0 34px rgba(110, 255, 181, 0.22);
+}
+
+/* 운동 선택 화면입니다. 큰 버튼형 목록으로 미러 화면에서도 누르기 쉽게 구성합니다. */
+.selection-layout,
+.records-layout {
+    display: grid;
+    grid-template-rows: 150px 1fr 220px;
+    gap: 24px;
+}
+
+.section-title {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-bottom: 1px solid var(--line);
+}
+
+.section-title span {
+    color: var(--green);
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.section-title h2 {
+    margin: 12px 0 0;
+    font-size: 58px;
+}
+
+.exercise-list {
+    display: grid;
+    grid-template-rows: repeat(3, 1fr);
+    gap: 22px;
+}
+
+.exercise-option {
+    width: 100%;
+    padding: 34px 38px;
+    border: 1px solid rgba(94, 215, 255, 0.24);
+    border-radius: 8px;
+    background: var(--panel);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.exercise-option:hover,
+.selected-option {
+    transform: translateY(-3px);
+    border-color: var(--green);
+    background: rgba(12, 35, 38, 0.94);
+}
+
+.exercise-option span,
+.selection-summary span,
+.record-overview span,
+.record-list span {
+    display: block;
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.exercise-option strong {
+    display: block;
+    margin-bottom: 14px;
+    font-size: 38px;
+}
+
+.exercise-option p {
+    margin: 0;
+    color: #c7d8df;
+    font-size: 24px;
+}
+
+.selection-summary,
+.record-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.selection-summary article,
+.record-overview article,
+.record-list article {
+    padding: 28px;
+    border: 1px solid rgba(110, 255, 181, 0.2);
+    border-radius: 8px;
+    background: var(--panel);
+}
+
+.selection-summary strong,
+.record-overview strong {
+    font-size: 34px;
+    color: var(--green);
+}
+
+/* 기록 화면은 요약 카드, 막대그래프, 최근 기록 목록으로 구성합니다. */
+.records-layout {
+    grid-template-rows: 140px 220px 1fr 240px;
+}
+
+.chart-panel {
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    align-items: end;
+    gap: 18px;
+    padding: 30px 34px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+}
+
+.bar {
+    position: relative;
+    min-height: 100%;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.bar::before {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 42px;
+    left: 0;
+    height: var(--bar-height);
+    border-radius: 8px 8px 4px 4px;
+    background: linear-gradient(180deg, var(--green), var(--blue));
+}
+
+.bar span {
+    position: absolute;
+    right: 0;
+    bottom: 8px;
+    left: 0;
+    color: var(--muted);
+    font-size: 20px;
+    font-weight: 800;
+    text-align: center;
+}
+
+.record-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.record-list strong {
+    display: block;
+    margin-bottom: 14px;
+    font-size: 28px;
+}
+
+.record-list p {
+    margin: 0;
+    color: #c7d8df;
+    font-size: 22px;
+}
+
+@keyframes scanMove {
+    from {
+        transform: translateY(-140px);
+    }
+    to {
+        transform: translateY(900px);
+    }
+}
