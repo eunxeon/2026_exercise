@@ -1,20 +1,22 @@
-/* 전체 화면에서 브라우저 기본 여백을 제거하고 스마트미러 화면을 꽉 채웁니다. */
 * {
     box-sizing: border-box;
 }
 
 :root {
-    --bg: #03070b;
-    --panel: rgba(9, 19, 28, 0.82);
-    --panel-soft: rgba(17, 35, 48, 0.62);
-    --line: rgba(116, 232, 255, 0.28);
-    --text: #f4fbff;
-    --muted: #9fb3bf;
-    --blue: #5ed7ff;
-    --green: #6effb5;
-    --shadow: 0 0 38px rgba(58, 205, 255, 0.16);
+    --bg: #1f2937;
+    --panel: #334155;
+    --panel-dark: #2f3b4d;
+    --panel-soft: #3b4658;
+    --line: rgba(203, 213, 225, 0.22);
+    --line-strong: #10b981;
+    --text: #f8fafc;
+    --muted: #cbd5e1;
+    --green: #10b981;
+    --blue: #3b82f6;
+    --purple: #8b5cf6;
+    --orange: #f97316;
+    --red: #ef4444;
     --mirror-scale: 1;
-    --mirror-rotation: 90deg;
 }
 
 html,
@@ -22,7 +24,7 @@ body {
     width: 100%;
     min-height: 100%;
     margin: 0;
-    background: var(--bg);
+    background: #101827;
     color: var(--text);
     font-family: "Pretendard", "Noto Sans KR", "Segoe UI", sans-serif;
 }
@@ -31,90 +33,28 @@ body {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    position: relative;
 }
 
 button {
     font: inherit;
 }
 
-/* 1080x1920 세로형 스마트미러를 기준으로 한 메인 레이아웃입니다. */
 .mirror-screen {
     width: 1080px;
     height: 1920px;
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(var(--mirror-rotation)) scale(var(--mirror-scale));
+    transform: translate(-50%, -50%) scale(var(--mirror-scale));
     transform-origin: center center;
-    padding: 42px 54px 42px;
-    display: grid;
-    grid-template-rows: 132px 1fr 124px;
-    gap: 24px;
-    background:
-        radial-gradient(circle at 18% 12%, rgba(94, 215, 255, 0.16), transparent 34%),
-        radial-gradient(circle at 82% 78%, rgba(110, 255, 181, 0.12), transparent 32%),
-        linear-gradient(180deg, #050b11 0%, #010305 100%);
+    padding: 24px 18px 24px;
+    background: var(--bg);
 }
 
-/* 날짜, 시스템 이름, 시간을 좌우 균형 있게 배치합니다. */
-.top-bar {
-    display: grid;
-    grid-template-columns: 0.9fr 1.75fr 0.9fr;
-    align-items: center;
-    border-bottom: 1px solid var(--line);
-}
-
-.date-block,
-.time-block,
-.brand-block {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.time-block {
-    align-items: flex-end;
-}
-
-.brand-block {
-    align-items: center;
-    text-align: center;
-}
-
-.label,
-.system-mark,
-.card-heading p,
-.metric-card span,
-.feedback-card span {
-    margin: 0;
-    color: var(--muted);
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 0;
-}
-
-.date-block strong,
-.time-block strong {
-    font-size: 36px;
-    line-height: 1;
-}
-
-.system-mark {
-    color: var(--green);
-}
-
-h1 {
-    margin: 0;
-    font-size: 38px;
-    font-weight: 800;
-    white-space: nowrap;
-}
-
-/* 중앙 콘텐츠는 버튼에 따라 표시되는 앱 화면을 한 장씩 겹쳐 둡니다. */
 .view-stack {
     position: relative;
-    min-height: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .app-view {
@@ -122,8 +62,8 @@ h1 {
     inset: 0;
     opacity: 0;
     pointer-events: none;
-    transform: translateY(18px);
-    transition: opacity 0.24s ease, transform 0.24s ease;
+    transform: translateY(14px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .active-view {
@@ -132,573 +72,598 @@ h1 {
     transform: translateY(0);
 }
 
-/* 운동 진행 화면은 운동 카드, 카메라 영역, 상태 패널로 구성합니다. */
-.main-layout {
+.home-view {
     display: grid;
-    grid-template-rows: 350px 1fr 246px;
-    gap: 22px;
-    min-height: 0;
+    grid-template-rows: 164px 154px 234px 620px 1fr;
+    gap: 16px;
+    overflow: hidden;
 }
 
-.exercise-card,
-.status-panel,
-.camera-frame {
+.profile-card,
+.time-card,
+.summary-card,
+.today-card,
+.quick-actions button,
+.start-button,
+.exercise-view,
+.records-view,
+.profile-view,
+.selected-panel,
+.video-stage,
+.training-panel,
+.record-overview article,
+.record-list article,
+.profile-detail-grid article {
     border: 1px solid var(--line);
+    border-radius: 8px;
     background: var(--panel);
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-.exercise-card {
-    padding: 30px 38px;
-    border-radius: 8px;
+.profile-card {
+    display: grid;
+    grid-template-columns: 92px 1fr auto;
+    align-items: center;
+    gap: 20px;
+    padding: 24px 30px;
+}
+
+.avatar {
+    width: 78px;
+    height: 78px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), #22d3ee);
+    color: #fff;
+    font-size: 34px;
+    font-weight: 900;
+}
+
+.profile-card h1 {
+    margin: 0 0 8px;
+    font-size: 44px;
+    line-height: 1;
+}
+
+.profile-card p,
+.time-card p,
+.summary-card p,
+.today-item p,
+.quick-actions p,
+.selected-panel p,
+.record-list p,
+.training-panel p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 22px;
+    line-height: 1.4;
+}
+
+.camera-state {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #34d399;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.camera-state span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #22c55e;
+}
+
+.time-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 30px;
+}
+
+.time-card strong {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 44px;
+    line-height: 1;
+}
+
+.time-card span {
+    color: var(--muted);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.summary-card {
+    padding: 24px 30px;
+}
+
+.summary-card span,
+.card-heading span,
+.quick-actions span,
+.subview-header span,
+.selected-panel span,
+.record-overview span,
+.record-list span,
+.profile-detail-grid span,
+.training-panel span {
+    color: var(--muted);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.summary-card strong {
+    display: block;
+    margin: 14px 0 12px;
+    font-size: 52px;
+    line-height: 1;
+}
+
+.progress-track {
+    width: 100%;
+    height: 10px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.75);
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: inherit;
+    background: #60a5fa;
+}
+
+.dark-fill {
+    background: #0f172a;
+}
+
+.today-card {
+    padding: 24px 30px;
 }
 
 .card-heading {
     display: flex;
     align-items: center;
-    gap: 14px;
-    margin-bottom: 14px;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 16px;
 }
 
-.accent-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 18px rgba(110, 255, 181, 0.85);
+.card-heading h2 {
+    margin: 8px 0 0;
+    font-size: 30px;
+    line-height: 1.1;
 }
 
-.exercise-card h2 {
-    margin: 0 0 14px;
-    font-size: 44px;
-    line-height: 1.18;
+.card-heading > strong {
+    min-width: 68px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.35);
+    color: #dbeafe;
+    font-size: 20px;
+    text-align: center;
 }
 
-.exercise-description {
-    width: 88%;
-    margin: 0 0 20px;
-    color: #c7d8df;
-    font-size: 22px;
-    line-height: 1.55;
-}
-
-.exercise-meta {
+.today-list {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.today-item {
+    width: 100%;
+    min-height: 82px;
+    display: grid;
+    grid-template-columns: 34px 1fr auto;
+    align-items: center;
+    gap: 18px;
+    padding: 16px 22px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-soft);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.today-item > span {
+    width: 24px;
+    height: 24px;
+    border: 4px solid #94a3b8;
+    border-radius: 50%;
+}
+
+.today-item strong {
+    font-size: 26px;
+    line-height: 1.2;
+}
+
+.today-item em {
+    padding: 8px 16px;
+    border-radius: 999px;
+    background: rgba(139, 92, 246, 0.45);
+    color: #ede9fe;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.selected-today {
+    border-color: var(--green);
+}
+
+.selected-today > span {
+    border-color: var(--green);
+    background: var(--green);
+    box-shadow: inset 0 0 0 5px var(--panel-soft);
+}
+
+.today-progress {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(203, 213, 225, 0.18);
+}
+
+.today-progress > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-rows: repeat(3, 1fr);
+    gap: 14px;
+}
+
+.quick-actions button {
+    position: relative;
+    overflow: hidden;
+    padding: 22px 30px;
+    border-color: rgba(96, 165, 250, 0.42);
+    background:
+        linear-gradient(135deg, rgba(59, 130, 246, 0.20), rgba(16, 185, 129, 0.08)),
+        var(--panel);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.quick-actions button::before {
+    content: "보기";
+    position: absolute;
+    top: 22px;
+    right: 72px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: rgba(96, 165, 250, 0.22);
+    color: #bfdbfe;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.quick-actions button::after {
+    content: "›";
+    position: absolute;
+    top: 50%;
+    right: 30px;
+    transform: translateY(-50%);
+    color: #86efac;
+    font-size: 46px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.quick-actions strong {
+    display: block;
+    margin: 6px 0;
+    font-size: 30px;
+}
+
+.quick-actions button:hover {
+    border-color: var(--green);
+    background:
+        linear-gradient(135deg, rgba(16, 185, 129, 0.24), rgba(59, 130, 246, 0.14)),
+        var(--panel-soft);
+    transform: translateY(-2px);
+}
+
+.quick-actions button:active {
+    transform: translateY(1px);
+}
+
+.start-button {
+    width: 100%;
+    min-height: 82px;
+    margin-top: 22px;
+    border-color: rgba(248, 113, 113, 0.75);
+    background: var(--red);
+    color: #fff;
+    font-size: 28px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.exercise-view,
+.records-view,
+.profile-view {
+    display: grid;
+    grid-template-rows: 112px 1fr auto;
+    gap: 16px;
+    padding: 20px;
+}
+
+.records-view,
+.profile-view {
+    grid-template-rows: 112px auto 1fr;
+}
+
+.subview-header {
+    display: grid;
+    grid-template-columns: 150px 1fr auto;
+    align-items: center;
     gap: 18px;
 }
 
-.exercise-meta div {
-    padding: 16px 20px;
-    border: 1px solid rgba(110, 255, 181, 0.22);
+.subview-header h2 {
+    margin: 6px 0 0;
+    font-size: 38px;
+    line-height: 1.1;
+}
+
+.subview-header > strong {
+    min-width: 70px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(59, 130, 246, 0.35);
+    color: #dbeafe;
+    font-size: 20px;
+    text-align: center;
+}
+
+.back-button,
+.return-button {
+    min-height: 64px;
+    border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--panel-soft);
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 900;
+    cursor: pointer;
 }
 
-.exercise-meta span {
+.exercise-list {
+    min-height: 0;
+    overflow-y: auto;
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding-right: 8px;
+}
+
+.exercise-list::-webkit-scrollbar {
+    width: 10px;
+}
+
+.exercise-list::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.45);
+    border-radius: 999px;
+}
+
+.exercise-list::-webkit-scrollbar-thumb {
+    background: #64748b;
+    border-radius: 999px;
+}
+
+.exercise-row {
+    width: 100%;
+    min-height: 92px;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel-soft);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.exercise-row:hover,
+.selected-row {
+    border-color: var(--green);
+}
+
+.exercise-row span {
+    color: #86efac;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.exercise-row strong {
     display: block;
-    margin-bottom: 8px;
-    color: var(--muted);
-    font-size: 17px;
+    overflow: hidden;
+    color: var(--text);
+    font-size: 26px;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.exercise-meta strong {
+.exercise-row em {
+    display: block;
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 700;
+}
+
+.selected-panel,
+.record-overview article,
+.record-list article,
+.profile-detail-grid article {
+    padding: 22px;
+}
+
+.selected-panel strong,
+.record-list strong,
+.profile-detail-grid strong {
+    display: block;
+    margin: 8px 0;
     font-size: 28px;
 }
 
-.camera-area {
-    min-height: 760px;
+.record-overview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
 }
 
-.camera-frame {
+.record-overview strong {
+    display: block;
+    margin-top: 10px;
+    color: #86efac;
+    font-size: 34px;
+}
+
+.record-list,
+.profile-detail-grid {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+}
+
+.profile-detail {
+    min-height: 230px;
+}
+
+.training-view {
+    display: grid;
+    grid-template-rows: 1fr 430px;
+    gap: 16px;
+}
+
+.video-stage {
     position: relative;
-    height: 100%;
-    min-height: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     overflow: hidden;
-    border-radius: 8px;
-    background:
-        linear-gradient(rgba(94, 215, 255, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(94, 215, 255, 0.06) 1px, transparent 1px),
-        rgba(2, 8, 12, 0.88);
-    background-size: 42px 42px;
+    display: grid;
+    place-items: center;
+    background: #070b10;
 }
 
-.camera-placeholder {
+.exercise-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #05080a;
+}
+
+.video-fallback {
+    max-width: 620px;
+    padding: 34px;
     text-align: center;
     z-index: 2;
 }
 
-.camera-placeholder span {
+.video-fallback span {
     display: block;
-    margin-bottom: 18px;
-    color: var(--blue);
-    font-size: 24px;
-    font-weight: 800;
+    color: #38bdf8;
+    font-size: 21px;
+    font-weight: 900;
 }
 
-.camera-placeholder strong {
+.video-fallback strong {
     display: block;
-    font-size: 50px;
-    margin-bottom: 14px;
+    margin: 16px 0;
+    font-size: 52px;
+    line-height: 1.1;
 }
 
-.camera-placeholder p {
+.video-fallback p {
     margin: 0;
     color: var(--muted);
-    font-size: 26px;
+    font-size: 22px;
 }
 
-/* 카메라 placeholder 위에 관절 추적 느낌의 skeleton을 표시합니다. */
-.pose-guide {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    opacity: 0.62;
-}
-
-.joint,
-.bone {
-    position: absolute;
-    display: block;
-}
-
-.joint {
-    width: 20px;
-    height: 20px;
-    border: 3px solid var(--green);
-    border-radius: 50%;
-    background: rgba(3, 7, 11, 0.72);
-    box-shadow: 0 0 22px rgba(110, 255, 181, 0.55);
-}
-
-.bone {
-    height: 5px;
-    border-radius: 999px;
-    background: linear-gradient(90deg, rgba(94, 215, 255, 0.18), rgba(110, 255, 181, 0.72));
-    transform-origin: left center;
-}
-
-.head {
-    top: 22%;
-    left: 50%;
-}
-
-.shoulder-left {
-    top: 34%;
-    left: 42%;
-}
-
-.shoulder-right {
-    top: 34%;
-    left: 58%;
-}
-
-.elbow-left {
-    top: 42%;
-    left: 34%;
-}
-
-.elbow-right {
-    top: 42%;
-    left: 66%;
-}
-
-.hand-left {
-    top: 54%;
-    left: 28%;
-}
-
-.hand-right {
-    top: 54%;
-    left: 72%;
-}
-
-.hip-left {
-    top: 58%;
-    left: 45%;
-}
-
-.hip-right {
-    top: 58%;
-    left: 55%;
-}
-
-.knee-left {
-    top: 75%;
-    left: 42%;
-}
-
-.knee-right {
-    top: 75%;
-    left: 58%;
-}
-
-.torso {
-    top: 47%;
-    left: 50%;
-    width: 230px;
-    transform: rotate(90deg) translateX(-50%);
-}
-
-.shoulders {
-    top: 35%;
-    left: 42%;
-    width: 170px;
-}
-
-.left-upper-arm {
-    top: 37%;
-    left: 35%;
-    width: 110px;
-    transform: rotate(-28deg);
-}
-
-.left-lower-arm {
-    top: 45%;
-    left: 29%;
-    width: 130px;
-    transform: rotate(-58deg);
-}
-
-.right-upper-arm {
-    top: 37%;
-    left: 59%;
-    width: 110px;
-    transform: rotate(28deg);
-}
-
-.right-lower-arm {
-    top: 45%;
-    left: 65%;
-    width: 130px;
-    transform: rotate(58deg);
-}
-
-.left-leg {
-    top: 60%;
-    left: 44%;
-    width: 180px;
-    transform: rotate(104deg);
-}
-
-.right-leg {
-    top: 60%;
-    left: 56%;
-    width: 180px;
-    transform: rotate(76deg);
-}
-
-.scan-line {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 120px;
-    background: linear-gradient(180deg, transparent, rgba(94, 215, 255, 0.18), transparent);
-    animation: scanMove 4s linear infinite;
-}
-
-.corner {
+.mirror-corners span {
     position: absolute;
     width: 80px;
     height: 80px;
-    border-color: var(--green);
-    opacity: 0.85;
+    border-color: rgba(255, 255, 255, 0.82);
 }
 
-.corner-left-top {
-    top: 26px;
-    left: 26px;
-    border-top: 4px solid;
-    border-left: 4px solid;
-}
+.mirror-corners span:nth-child(1) { top: 28px; left: 28px; border-top: 4px solid; border-left: 4px solid; }
+.mirror-corners span:nth-child(2) { top: 28px; right: 28px; border-top: 4px solid; border-right: 4px solid; }
+.mirror-corners span:nth-child(3) { right: 28px; bottom: 28px; border-right: 4px solid; border-bottom: 4px solid; }
+.mirror-corners span:nth-child(4) { left: 28px; bottom: 28px; border-left: 4px solid; border-bottom: 4px solid; }
 
-.corner-right-top {
-    top: 26px;
-    right: 26px;
-    border-top: 4px solid;
-    border-right: 4px solid;
-}
-
-.corner-left-bottom {
-    bottom: 26px;
-    left: 26px;
-    border-bottom: 4px solid;
-    border-left: 4px solid;
-}
-
-.corner-right-bottom {
-    right: 26px;
-    bottom: 26px;
-    border-right: 4px solid;
-    border-bottom: 4px solid;
-}
-
-/* 상태 패널은 하단에 크게 배치하여 세로형 화면에서 읽기 쉽게 만듭니다. */
-.status-panel {
+.training-panel {
     display: grid;
-    grid-template-columns: 1fr 1fr 1.35fr;
-    gap: 20px;
+    grid-template-columns: 1.25fr 1fr;
+    grid-template-rows: 1fr 1fr 82px;
+    gap: 14px;
     padding: 18px;
-    border-radius: 8px;
 }
 
-.metric-card,
-.feedback-card {
-    padding: 24px;
-    border: 1px solid rgba(94, 215, 255, 0.18);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.035);
-}
-
-.metric-card strong {
-    display: block;
-    margin: 14px 0;
-    font-size: 52px;
-    color: var(--green);
-}
-
-.metric-card p {
-    margin: 0;
-    color: var(--muted);
-    font-size: 22px;
-}
-
-.progress-track {
-    width: 100%;
-    height: 12px;
-    overflow: hidden;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.12);
-}
-
-.progress-fill {
-    width: 92%;
-    height: 100%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, var(--blue), var(--green));
-}
-
-.feedback-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.feedback-card strong {
-    margin-top: 16px;
-    color: #ffffff;
-    font-size: 30px;
-    line-height: 1.35;
-}
-
-/* 하단 버튼은 스마트미러에서 멀리서도 누르기 쉽도록 크게 만듭니다. */
-.bottom-actions {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 22px;
-}
-
-.bottom-actions button {
-    min-height: 104px;
-    border: 1px solid rgba(94, 215, 255, 0.35);
-    border-radius: 8px;
-    background: rgba(12, 28, 40, 0.92);
-    color: var(--text);
-    font-size: 32px;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 0 26px rgba(94, 215, 255, 0.12);
-    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-}
-
-.bottom-actions button:hover {
-    transform: translateY(-3px);
-    border-color: var(--green);
-    background: rgba(18, 52, 60, 0.96);
-}
-
-.bottom-actions .primary-button {
-    border-color: rgba(110, 255, 181, 0.72);
-    background: linear-gradient(135deg, rgba(0, 155, 112, 0.92), rgba(15, 112, 145, 0.92));
-}
-
-.bottom-actions .active-action {
-    border-color: var(--green);
-    box-shadow: 0 0 34px rgba(110, 255, 181, 0.22);
-}
-
-/* 운동 선택 화면입니다. 큰 버튼형 목록으로 미러 화면에서도 누르기 쉽게 구성합니다. */
-.selection-layout,
-.records-layout {
-    display: grid;
-    grid-template-rows: 150px 1fr 220px;
-    gap: 24px;
-}
-
-.section-title {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    border-bottom: 1px solid var(--line);
-}
-
-.section-title span {
-    color: var(--green);
-    font-size: 22px;
-    font-weight: 800;
-}
-
-.section-title h2 {
-    margin: 12px 0 0;
-    font-size: 58px;
-}
-
-.exercise-list {
-    display: grid;
-    grid-template-rows: repeat(3, 1fr);
-    gap: 22px;
-}
-
-.exercise-option {
-    width: 100%;
-    padding: 34px 38px;
-    border: 1px solid rgba(94, 215, 255, 0.24);
-    border-radius: 8px;
-    background: var(--panel);
-    color: var(--text);
-    text-align: left;
-    cursor: pointer;
-    box-shadow: var(--shadow);
-    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-}
-
-.exercise-option:hover,
-.selected-option {
-    transform: translateY(-3px);
-    border-color: var(--green);
-    background: rgba(12, 35, 38, 0.94);
-}
-
-.exercise-option span,
-.selection-summary span,
-.record-overview span,
-.record-list span {
-    display: block;
-    margin-bottom: 12px;
-    color: var(--muted);
-    font-size: 20px;
-    font-weight: 700;
-}
-
-.exercise-option strong {
-    display: block;
-    margin-bottom: 14px;
-    font-size: 38px;
-}
-
-.exercise-option p {
-    margin: 0;
-    color: #c7d8df;
-    font-size: 24px;
-}
-
-.selection-summary,
-.record-overview {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-}
-
-.selection-summary article,
-.record-overview article,
-.record-list article {
-    padding: 28px;
-    border: 1px solid rgba(110, 255, 181, 0.2);
-    border-radius: 8px;
-    background: var(--panel);
-}
-
-.selection-summary strong,
-.record-overview strong {
-    font-size: 34px;
-    color: var(--green);
-}
-
-/* 기록 화면은 요약 카드, 막대그래프, 최근 기록 목록으로 구성합니다. */
-.records-layout {
-    grid-template-rows: 140px 220px 1fr 240px;
-}
-
-.chart-panel {
-    height: 100%;
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    align-items: end;
-    gap: 18px;
-    padding: 30px 34px;
+.training-info,
+.rep-box,
+.metric-box,
+.feedback-box {
+    min-width: 0;
+    padding: 18px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--panel);
-    box-shadow: var(--shadow);
 }
 
-.bar {
-    position: relative;
-    min-height: 100%;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
+.training-info { grid-row: 1 / 3; }
+.rep-box { grid-column: 2; }
+.metric-box:nth-of-type(3),
+.metric-box:nth-of-type(4) { grid-column: 2; }
+.feedback-box { grid-column: 1; grid-row: 3; border-left: 4px solid var(--green); }
+.return-button { grid-column: 2; grid-row: 3; min-height: 100%; }
+
+.training-panel h2 {
+    margin: 8px 0 12px;
+    font-size: 30px;
+    line-height: 1.16;
 }
 
-.bar::before {
-    content: "";
-    position: absolute;
-    right: 0;
-    bottom: 42px;
-    left: 0;
-    height: var(--bar-height);
-    border-radius: 8px 8px 4px 4px;
-    background: linear-gradient(180deg, var(--green), var(--blue));
+.rep-box,
+.metric-box,
+.feedback-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
-.bar span {
-    position: absolute;
-    right: 0;
-    bottom: 8px;
-    left: 0;
-    color: var(--muted);
-    font-size: 20px;
-    font-weight: 800;
-    text-align: center;
+.rep-box span {
+    color: #38bdf8;
 }
 
-.record-list {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.record-list strong {
+.rep-box strong,
+.metric-box strong {
     display: block;
-    margin-bottom: 14px;
-    font-size: 28px;
-}
-
-.record-list p {
-    margin: 0;
-    color: #c7d8df;
-    font-size: 22px;
-}
-
-@keyframes scanMove {
-    from {
-        transform: translateY(-140px);
-    }
-    to {
-        transform: translateY(900px);
-    }
+    margin: 10px 0;
+    color: #86efac;
+    font-size: 42px;
+    line-height: 1;
 }
