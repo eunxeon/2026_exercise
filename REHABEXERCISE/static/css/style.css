@@ -8,13 +8,11 @@
     --panel-dark: #2f3b4d;
     --panel-soft: #3b4658;
     --line: rgba(203, 213, 225, 0.22);
-    --line-strong: #10b981;
     --text: #f8fafc;
     --muted: #cbd5e1;
     --green: #10b981;
     --blue: #3b82f6;
     --purple: #8b5cf6;
-    --orange: #f97316;
     --red: #ef4444;
     --mirror-scale: 1;
 }
@@ -47,7 +45,7 @@ button {
     left: 50%;
     transform: translate(-50%, -50%) scale(var(--mirror-scale));
     transform-origin: center center;
-    padding: 24px 18px 24px;
+    padding: 24px 18px;
     background: var(--bg);
 }
 
@@ -153,7 +151,12 @@ button {
     width: 12px;
     height: 12px;
     border-radius: 50%;
+    background: #94a3b8;
+}
+
+.camera-state.camera-active span {
     background: #22c55e;
+    box-shadow: 0 0 18px rgba(34, 197, 94, 0.7);
 }
 
 .time-card {
@@ -170,7 +173,16 @@ button {
     line-height: 1;
 }
 
-.time-card span {
+.time-card span,
+.summary-card span,
+.card-heading span,
+.quick-actions span,
+.subview-header span,
+.selected-panel span,
+.record-overview span,
+.record-list span,
+.profile-detail-grid span,
+.training-panel span {
     color: var(--muted);
     font-size: 20px;
     font-weight: 800;
@@ -184,20 +196,6 @@ button {
 
 .summary-card {
     padding: 24px 30px;
-}
-
-.summary-card span,
-.card-heading span,
-.quick-actions span,
-.subview-header span,
-.selected-panel span,
-.record-overview span,
-.record-list span,
-.profile-detail-grid span,
-.training-panel span {
-    color: var(--muted);
-    font-size: 20px;
-    font-weight: 800;
 }
 
 .summary-card strong {
@@ -328,8 +326,6 @@ button {
 }
 
 .quick-actions button {
-    position: relative;
-    overflow: hidden;
     padding: 22px 30px;
     border-color: rgba(96, 165, 250, 0.42);
     background:
@@ -338,50 +334,12 @@ button {
     color: var(--text);
     text-align: left;
     cursor: pointer;
-    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
-}
-
-.quick-actions button::before {
-    content: "보기";
-    position: absolute;
-    top: 22px;
-    right: 72px;
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: rgba(96, 165, 250, 0.22);
-    color: #bfdbfe;
-    font-size: 18px;
-    font-weight: 900;
-}
-
-.quick-actions button::after {
-    content: "›";
-    position: absolute;
-    top: 50%;
-    right: 30px;
-    transform: translateY(-50%);
-    color: #86efac;
-    font-size: 46px;
-    font-weight: 900;
-    line-height: 1;
 }
 
 .quick-actions strong {
     display: block;
     margin: 6px 0;
     font-size: 30px;
-}
-
-.quick-actions button:hover {
-    border-color: var(--green);
-    background:
-        linear-gradient(135deg, rgba(16, 185, 129, 0.24), rgba(59, 130, 246, 0.14)),
-        var(--panel-soft);
-    transform: translateY(-2px);
-}
-
-.quick-actions button:active {
-    transform: translateY(1px);
 }
 
 .start-button {
@@ -452,20 +410,6 @@ button {
     align-content: start;
     gap: 12px;
     padding-right: 8px;
-}
-
-.exercise-list::-webkit-scrollbar {
-    width: 10px;
-}
-
-.exercise-list::-webkit-scrollbar-track {
-    background: rgba(15, 23, 42, 0.45);
-    border-radius: 999px;
-}
-
-.exercise-list::-webkit-scrollbar-thumb {
-    background: #64748b;
-    border-radius: 999px;
 }
 
 .exercise-row {
@@ -567,13 +511,27 @@ button {
     background: #070b10;
 }
 
-.exercise-video {
+.camera-frame {
+    isolation: isolate;
+}
+
+.camera-video {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain;
+    object-fit: cover;
     background: #05080a;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.camera-video.camera-ready {
+    opacity: 1;
+}
+
+.capture-canvas {
+    display: none;
 }
 
 .video-fallback {
@@ -581,6 +539,10 @@ button {
     padding: 34px;
     text-align: center;
     z-index: 2;
+}
+
+.video-fallback[hidden] {
+    display: none;
 }
 
 .video-fallback span {
@@ -608,6 +570,7 @@ button {
     width: 80px;
     height: 80px;
     border-color: rgba(255, 255, 255, 0.82);
+    z-index: 3;
 }
 
 .mirror-corners span:nth-child(1) { top: 28px; left: 28px; border-top: 4px solid; border-left: 4px solid; }

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rehab Mirror</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260608-007">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260608-camera">
 </head>
 <body>
     <main class="mirror-screen">
@@ -16,7 +16,7 @@
                         <h1>김영희님</h1>
                         <p>여성 · 68세 · 어깨 재활 프로그램</p>
                     </div>
-                    <div class="camera-state"><span></span>카메라 준비</div>
+                    <div class="camera-state" id="home-camera-state"><span></span>카메라 준비</div>
                 </section>
 
                 <section class="time-card">
@@ -29,7 +29,7 @@
 
                 <section class="summary-grid">
                     <article class="summary-card">
-                        <span>주간 달성률</span>
+                        <span>주간 수행률</span>
                         <strong>65%</strong>
                         <div class="progress-track"><div class="progress-fill" style="width: 65%"></div></div>
                         <p>5일 중 3일 완료</p>
@@ -52,34 +52,22 @@
                     <div class="today-list">
                         <button type="button" class="today-item selected-today" data-exercise="shoulder">
                             <span></span>
-                            <div>
-                                <strong>어깨 돌리기</strong>
-                                <p>3세트 × 10회</p>
-                            </div>
+                            <div><strong>어깨 들어올리기</strong><p>3세트 x 10회</p></div>
                             <em>상체</em>
                         </button>
                         <button type="button" class="today-item" data-exercise="knee">
                             <span></span>
-                            <div>
-                                <strong>무릎 굽혔다 펴기</strong>
-                                <p>2세트 × 15회</p>
-                            </div>
+                            <div><strong>무릎 굽혔다 펴기</strong><p>2세트 x 15회</p></div>
                             <em>하체</em>
                         </button>
                         <button type="button" class="today-item" data-exercise="flexibility">
                             <span></span>
-                            <div>
-                                <strong>팔 올리기</strong>
-                                <p>3세트 × 12회</p>
-                            </div>
-                            <em>상체</em>
+                            <div><strong>옆구리 늘리기</strong><p>3세트 x 12회</p></div>
+                            <em>유연성</em>
                         </button>
                     </div>
                     <div class="today-progress">
-                        <div>
-                            <span>오늘 진행률</span>
-                            <strong>33%</strong>
-                        </div>
+                        <div><span>오늘 진행률</span><strong>33%</strong></div>
                         <div class="progress-track"><div class="progress-fill dark-fill" style="width: 33%"></div></div>
                     </div>
                     <button type="button" class="start-button" id="start-button">선택한 운동 시작</button>
@@ -87,19 +75,13 @@
 
                 <section class="quick-actions">
                     <button type="button" data-view="exercise-view">
-                        <span>운동 선택</span>
-                        <strong>재활 운동 목록</strong>
-                        <p>운동 종류와 부위별 운동을 확인합니다.</p>
+                        <span>운동 선택</span><strong>재활 운동 목록</strong><p>운동 종류와 부위별 운동을 확인합니다.</p>
                     </button>
                     <button type="button" data-view="records-view">
-                        <span>기록 보기</span>
-                        <strong>최근 재활 진행</strong>
-                        <p>완료한 운동과 정확도를 확인합니다.</p>
+                        <span>기록 보기</span><strong>최근 재활 진행</strong><p>완료한 운동과 정확도를 확인합니다.</p>
                     </button>
                     <button type="button" data-view="profile-view">
-                        <span>회원 정보</span>
-                        <strong>내 정보 확인</strong>
-                        <p>회원 정보와 카메라 상태를 확인합니다.</p>
+                        <span>회원 정보</span><strong>내 정보 확인</strong><p>회원 정보와 카메라 상태를 확인합니다.</p>
                     </button>
                 </section>
             </section>
@@ -107,16 +89,13 @@
             <section class="exercise-view app-view" id="exercise-view">
                 <div class="subview-header">
                     <button type="button" class="back-button" data-view="home-view">메인으로</button>
-                    <div>
-                        <span>운동 선택</span>
-                        <h2>재활 운동 목록</h2>
-                    </div>
-                    <strong id="exercise-count">11개</strong>
+                    <div><span>운동 선택</span><h2>재활 운동 목록</h2></div>
+                    <strong id="exercise-count">0개</strong>
                 </div>
                 <div class="exercise-list" id="exercise-list"></div>
                 <aside class="selected-panel">
                     <span>선택한 운동</span>
-                    <strong id="selected-title">어깨 유착성 피막염 운동</strong>
+                    <strong id="selected-title">어깨 들어올리기</strong>
                     <p id="selected-description">어깨 관절을 부드럽게 움직이며 가동 범위를 확인합니다.</p>
                 </aside>
             </section>
@@ -124,10 +103,7 @@
             <section class="records-view app-view" id="records-view">
                 <div class="subview-header">
                     <button type="button" class="back-button" data-view="home-view">메인으로</button>
-                    <div>
-                        <span>기록 보기</span>
-                        <h2>최근 재활 진행</h2>
-                    </div>
+                    <div><span>기록 보기</span><h2>최근 재활 진행</h2></div>
                 </div>
                 <div class="record-overview">
                     <article><span>이번주 완료</span><strong>3일</strong></article>
@@ -135,42 +111,37 @@
                     <article><span>총 반복 횟수</span><strong>186회</strong></article>
                 </div>
                 <div class="record-list">
-                    <article><span>2026.06.07</span><strong>어깨 돌리기</strong><p>정확도 92% · 3세트 완료</p></article>
+                    <article><span>2026.06.07</span><strong>어깨 들어올리기</strong><p>정확도 92% · 3세트 완료</p></article>
                     <article><span>2026.06.06</span><strong>무릎 굽혔다 펴기</strong><p>정확도 87% · 2세트 완료</p></article>
-                    <article><span>2026.06.05</span><strong>팔 올리기</strong><p>정확도 91% · 3세트 완료</p></article>
+                    <article><span>2026.06.05</span><strong>옆구리 늘리기</strong><p>정확도 91% · 3세트 완료</p></article>
                 </div>
             </section>
 
             <section class="profile-view app-view" id="profile-view">
                 <div class="subview-header">
                     <button type="button" class="back-button" data-view="home-view">메인으로</button>
-                    <div>
-                        <span>회원 정보</span>
-                        <h2>김영희님</h2>
-                    </div>
+                    <div><span>회원 정보</span><h2>김영희님</h2></div>
                 </div>
                 <section class="profile-card profile-detail">
                     <div class="avatar" aria-hidden="true">김</div>
-                    <div>
-                        <h1>어깨 재활 프로그램</h1>
-                        <p>여성 · 68세 · 주 5회 권장</p>
-                    </div>
-                    <div class="camera-state"><span></span>카메라 준비</div>
+                    <div><h1>어깨 재활 프로그램</h1><p>여성 · 68세 · 주 5회 권장</p></div>
+                    <div class="camera-state" id="profile-camera-state"><span></span>카메라 준비</div>
                 </section>
                 <section class="profile-detail-grid">
-                    <article><span>담당 부위</span><strong>어깨 / 상체</strong></article>
+                    <article><span>해당 부위</span><strong>어깨 / 상체</strong></article>
                     <article><span>이번주 목표</span><strong>5일 중 3일 완료</strong></article>
                     <article><span>주의 사항</span><strong>통증 발생 시 즉시 중단</strong></article>
                 </section>
             </section>
 
             <section class="training-view app-view" id="training-view">
-                <section class="video-stage">
-                    <video id="exercise-video" class="exercise-video" muted loop playsinline preload="metadata"></video>
-                    <div class="video-fallback" id="video-fallback">
-                        <span>예시 영상</span>
-                        <strong id="fallback-title">어깨 유착성 피막염 운동</strong>
-                        <p>운동 영상을 준비하고 있습니다.</p>
+                <section class="video-stage camera-frame">
+                    <video id="camera-video" class="camera-video" autoplay muted playsinline></video>
+                    <canvas id="capture-canvas" class="capture-canvas" width="480" height="360"></canvas>
+                    <div class="video-fallback camera-placeholder" id="camera-placeholder">
+                        <span>카메라 대기</span>
+                        <strong id="fallback-title">어깨 들어올리기</strong>
+                        <p>운동 시작 후 카메라 권한을 허용해 주세요.</p>
                     </div>
                     <div class="mirror-corners" aria-hidden="true">
                         <span></span><span></span><span></span><span></span>
@@ -180,21 +151,21 @@
                 <section class="training-panel">
                     <article class="training-info">
                         <span>오늘의 재활운동</span>
-                        <h2 id="exercise-title">어깨 유착성 피막염 운동</h2>
-                        <p id="exercise-description">영상을 보며 천천히 같은 속도로 따라 해주세요.</p>
+                        <h2 id="exercise-title">어깨 들어올리기</h2>
+                        <p id="exercise-description">통증 없는 범위에서 천천히 팔을 올리고 내립니다.</p>
                     </article>
                     <article class="rep-box">
                         <span id="exercise-state">READY</span>
                         <strong id="rep-counter">0 / 15</strong>
-                        <p id="camera-message">운동 시작 후 진행률이 표시됩니다.</p>
+                        <p id="camera-message">운동 시작 후 카메라 화면이 표시됩니다.</p>
                     </article>
                     <article class="metric-box">
                         <span>정확도</span>
-                        <strong id="accuracy-value">92%</strong>
+                        <strong id="accuracy-value">--%</strong>
                     </article>
                     <article class="metric-box">
-                        <span>관절 각도</span>
-                        <strong id="angle-value">74°</strong>
+                        <span>현재 / 목표 각도</span>
+                        <strong id="angle-value">-- / --°</strong>
                     </article>
                     <article class="feedback-box">
                         <span>실시간 피드백</span>
@@ -206,6 +177,6 @@
         </section>
     </main>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260608-007"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260608-camera"></script>
 </body>
 </html>

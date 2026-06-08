@@ -1,3 +1,8 @@
+const CAPTURE_WIDTH = 480;
+const CAPTURE_HEIGHT = 360;
+const ANALYZE_INTERVAL_MS = 300;
+const JPEG_QUALITY = 0.72;
+
 function updateMirrorScale() {
     const baseWidth = 1080;
     const baseHeight = 1920;
@@ -6,21 +11,17 @@ function updateMirrorScale() {
 }
 
 const exercises = [
-    { key: "intro", name: "노인 입체운동에 대하여", category: "기초 안내", part: "전신", target: 0, duration: "약 5분", angle: 0, description: "입체운동의 목적과 스마트미러 사용 흐름을 확인합니다.", guide: "처음 사용하는 분은 이 안내 영상을 먼저 확인하면 좋습니다.", video: "/static/videos/intro.mp4" },
-    { key: "intensity", name: "운동강도에 대한 쉬운 이해", category: "기초 안내", part: "전신", target: 0, duration: "약 4분", angle: 0, description: "운동 중 숨참, 피로감, 통증 신호를 쉽게 구분합니다.", guide: "운동 전 오늘 몸 상태를 확인하고 강도를 조절하는 데 사용합니다.", video: "/static/videos/intensity.mp4" },
-    { key: "aerobic", name: "유산소 운동", category: "기본 운동", part: "전신", target: 20, duration: "약 10분", angle: 70, description: "지구력과 심폐 기능을 위한 가벼운 반복 운동입니다.", guide: "호흡을 편하게 유지하면서 일정한 속도로 움직여주세요.", video: "/static/videos/aerobic.mp4" },
-    { key: "balance", name: "균형 운동", category: "기본 운동", part: "전신", target: 12, duration: "약 7분", angle: 65, description: "자세 흔들림을 줄이고 낙상 예방에 도움을 줍니다.", guide: "필요하면 의자나 벽을 잡고 안전하게 따라 해주세요.", video: "/static/videos/balance.mp4" },
-    { key: "flexibility", name: "유연 운동", category: "기본 운동", part: "전신", target: 15, duration: "약 8분", angle: 75, description: "굳은 근육과 관절을 부드럽게 풀어주는 운동입니다.", guide: "반동을 주지 말고 천천히 늘려주세요.", video: "/static/videos/flexibility.mp4" },
-    { key: "seated", name: "노인 앉은 자세 운동", category: "의자 운동", part: "전신", target: 15, duration: "약 8분", angle: 80, description: "의자에 앉아 안전하게 따라 할 수 있는 전신 운동입니다.", guide: "허리를 세우고 발바닥을 바닥에 붙인 상태로 진행해주세요.", video: "/static/videos/seated.mp4" },
-    { key: "strength", name: "강화 운동", category: "근력 운동", part: "전신", target: 12, duration: "약 9분", angle: 80, description: "근력 유지와 일상 동작 회복을 돕는 운동입니다.", guide: "무리하게 힘을 주지 말고 가능한 범위에서 반복해주세요.", video: "/static/videos/strength.mp4" },
-    { key: "shoulder", name: "어깨 유착성 피막염 운동", category: "어깨 재활", part: "상체", target: 15, duration: "약 8분", angle: 80, description: "어깨 관절을 부드럽게 움직이며 가동 범위를 확인합니다.", guide: "통증이 없는 범위에서 천천히 팔을 올리고 내립니다.", video: "/static/videos/shoulder.mp4" },
-    { key: "disc", name: "요추 신경관 협착증 및 디스크 탈출증", category: "허리 재활", part: "코어", target: 10, duration: "약 8분", angle: 55, description: "허리에 부담을 줄이며 코어 안정성을 확인합니다.", guide: "허리 통증이 생기면 즉시 중단하고 전문가에게 확인해주세요.", video: "/static/videos/disc.mp4" },
-    { key: "parkinson-aerobic", name: "파킨슨병 유산소 운동", category: "파킨슨 운동", part: "전신", target: 20, duration: "약 10분", angle: 70, description: "리듬감 있는 움직임으로 보행과 지구력을 돕습니다.", guide: "박자에 맞춰 천천히, 넘어지지 않도록 안정적으로 움직여주세요.", video: "/static/videos/parkinson-aerobic.mp4" },
-    { key: "parkinson-strength", name: "파킨슨병 강화 운동", category: "파킨슨 운동", part: "전신", target: 12, duration: "약 9분", angle: 75, description: "일상생활에 필요한 근력과 자세 유지 능력을 돕습니다.", guide: "움직임이 작아지지 않도록 천천히 크게 따라 해주세요.", video: "/static/videos/parkinson-strength.mp4" }
+    { key: "shoulder", name: "어깨 들어올리기", category: "어깨 재활", part: "상체", target: 15, duration: "약 8분", angle: 80, description: "어깨 관절을 부드럽게 움직이며 가동 범위를 확인합니다.", guide: "통증 없는 범위에서 천천히 팔을 올리고 내립니다." },
+    { key: "knee", name: "무릎 굽혔다 펴기", category: "무릎 재활", part: "하체", target: 15, duration: "약 7분", angle: 70, description: "무릎을 안정적으로 굽혔다 펴며 하체 움직임을 확인합니다.", guide: "의자나 벽을 잡고 무리하지 않는 범위에서 진행하세요." },
+    { key: "flexibility", name: "옆구리 늘리기", category: "유연성", part: "상체", target: 12, duration: "약 6분", angle: 75, description: "몸통을 천천히 기울여 옆구리와 허리 주변을 풀어줍니다.", guide: "반동을 주지 말고 숨을 편안히 쉬면서 움직이세요." },
+    { key: "balance", name: "균형 운동", category: "기본 운동", part: "전신", target: 12, duration: "약 7분", angle: 65, description: "자세 흔들림을 줄이고 일상 보행 안정성을 높입니다.", guide: "필요하면 보호자나 벽을 가까이 두고 진행하세요." },
+    { key: "strength", name: "근력 강화 운동", category: "근력 운동", part: "전신", target: 12, duration: "약 9분", angle: 80, description: "일상생활에 필요한 근력과 자세 유지 능력을 연습합니다.", guide: "천천히 움직이고 통증이 생기면 바로 멈추세요." }
 ];
 
-let selectedExercise = exercises.find((exercise) => exercise.key === "shoulder");
-let exerciseTimer = null;
+let selectedExercise = exercises[0];
+let cameraStream = null;
+let analyzeTimer = null;
+let isAnalyzing = false;
 let currentRep = 0;
 
 const els = {
@@ -38,15 +39,31 @@ const els = {
     feedbackText: document.getElementById("feedback-text"),
     accuracyValue: document.getElementById("accuracy-value"),
     angleValue: document.getElementById("angle-value"),
-    video: document.getElementById("exercise-video"),
-    videoFallback: document.getElementById("video-fallback"),
+    cameraVideo: document.getElementById("camera-video"),
+    captureCanvas: document.getElementById("capture-canvas"),
+    cameraPlaceholder: document.getElementById("camera-placeholder"),
     fallbackTitle: document.getElementById("fallback-title"),
     startButton: document.getElementById("start-button"),
-    returnButton: document.getElementById("return-button")
+    returnButton: document.getElementById("return-button"),
+    homeCameraState: document.getElementById("home-camera-state"),
+    profileCameraState: document.getElementById("profile-camera-state")
 };
 
 function setText(element, value) {
     if (element) element.textContent = value;
+}
+
+function setCameraState(text, active = false) {
+    [els.homeCameraState, els.profileCameraState].forEach((element) => {
+        if (!element) return;
+        element.classList.toggle("camera-active", active);
+        element.lastChild.textContent = text;
+    });
+}
+
+function showStatus(message, state = null) {
+    setText(els.cameraMessage, message);
+    if (state) setText(els.exerciseState, state);
 }
 
 function updateDateTime() {
@@ -79,20 +96,10 @@ function renderExerciseList() {
             <span>${exercise.category}</span>
             <div>
                 <strong>${exercise.name}</strong>
-                <em>${exercise.part} · ${exercise.target ? `${exercise.target}회` : "영상 안내"} · ${exercise.duration}</em>
+                <em>${exercise.part} · ${exercise.target}회 · ${exercise.duration}</em>
             </div>
         </button>
     `).join("");
-}
-
-function setVideoSource(exercise) {
-    if (!els.video) return;
-    els.video.pause();
-    els.video.removeAttribute("src");
-    els.video.load();
-    els.video.src = exercise.video;
-    if (els.videoFallback) els.videoFallback.hidden = false;
-    setText(els.fallbackTitle, exercise.name);
 }
 
 function renderSelectedExercise() {
@@ -100,9 +107,9 @@ function renderSelectedExercise() {
     setText(els.selectedDescription, selectedExercise.description);
     setText(els.exerciseTitle, selectedExercise.name);
     setText(els.exerciseDescription, selectedExercise.guide);
-    setText(els.repCounter, `${currentRep} / ${selectedExercise.target || "-"}`);
-    setText(els.angleValue, selectedExercise.angle ? `${Math.round(selectedExercise.angle * 0.92)}°` : "-");
-    setVideoSource(selectedExercise);
+    setText(els.repCounter, `${currentRep} / ${selectedExercise.target}`);
+    setText(els.angleValue, `-- / ${selectedExercise.angle}°`);
+    setText(els.fallbackTitle, selectedExercise.name);
 
     document.querySelectorAll(".exercise-row").forEach((button) => {
         button.classList.toggle("selected-row", button.dataset.exercise === selectedExercise.key);
@@ -112,13 +119,13 @@ function renderSelectedExercise() {
     });
 }
 
-function resetExerciseState(message = "운동 시작 후 진행률이 표시됩니다.") {
-    clearInterval(exerciseTimer);
+function resetExerciseState(message = "운동 시작 후 카메라 화면이 표시됩니다.") {
+    stopCameraExercise();
     currentRep = 0;
     setText(els.exerciseState, "READY");
-    setText(els.cameraMessage, message);
     setText(els.feedbackText, "통증이 있으면 즉시 중단하고 보호자에게 알려주세요.");
-    setText(els.accuracyValue, "92%");
+    setText(els.accuracyValue, "--%");
+    showStatus(message);
     renderSelectedExercise();
 }
 
@@ -129,51 +136,121 @@ function chooseExercise(key) {
     resetExerciseState("선택한 운동으로 준비되었습니다.");
 }
 
-function startExerciseDemo() {
-    showView("training-view");
-    clearInterval(exerciseTimer);
-    currentRep = 0;
+function stopCameraExercise() {
+    if (analyzeTimer) {
+        clearInterval(analyzeTimer);
+        analyzeTimer = null;
+    }
+    isAnalyzing = false;
 
-    setText(els.exerciseState, selectedExercise.target ? "TRACKING" : "GUIDE");
-    setText(els.cameraMessage, selectedExercise.target ? "예시 영상을 보며 같은 속도로 따라 해주세요." : "안내 영상을 편안하게 시청해주세요.");
-    setText(els.feedbackText, selectedExercise.guide);
-    renderSelectedExercise();
-
-    if (els.video) {
-        els.video.play().then(() => {
-            if (els.videoFallback) els.videoFallback.hidden = true;
-        }).catch(() => {
-            if (els.videoFallback) els.videoFallback.hidden = false;
-        });
+    if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop());
+        cameraStream = null;
     }
 
-    if (!selectedExercise.target) return;
+    if (els.cameraVideo) {
+        els.cameraVideo.pause();
+        els.cameraVideo.srcObject = null;
+        els.cameraVideo.classList.remove("camera-ready");
+    }
+    if (els.cameraPlaceholder) els.cameraPlaceholder.hidden = false;
+    setCameraState("카메라 준비", false);
+}
 
-    exerciseTimer = setInterval(() => {
-        currentRep += 1;
-        const progress = currentRep / selectedExercise.target;
-        const accuracy = Math.min(97, Math.round(86 + progress * 10));
-        const angle = Math.min(selectedExercise.angle, Math.round(selectedExercise.angle * (0.55 + progress * 0.45)));
-        const completedRep = Math.min(currentRep, selectedExercise.target);
-        const isComplete = currentRep >= selectedExercise.target;
+async function startCameraExercise() {
+    showView("training-view");
+    stopCameraExercise();
+    renderSelectedExercise();
+    showStatus("카메라 권한을 요청하고 있습니다.", "STARTING");
 
-        setText(els.repCounter, `${completedRep} / ${selectedExercise.target}`);
-        setText(els.accuracyValue, `${accuracy}%`);
-        setText(els.angleValue, `${angle}°`);
-        setText(els.feedbackText, isComplete ? "운동 완료. 안정적으로 수행했습니다." : "좋아요. 호흡을 유지하면서 같은 속도로 반복해주세요.");
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showStatus("브라우저 보안 설정 때문에 카메라 API를 사용할 수 없습니다.", "ERROR");
+        return;
+    }
 
-        if (isComplete) {
-            clearInterval(exerciseTimer);
-            setText(els.exerciseState, "COMPLETE");
-            setText(els.cameraMessage, "오늘 운동 기록이 임시 저장되었습니다.");
-            if (els.video) els.video.pause();
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+                width: { ideal: CAPTURE_WIDTH },
+                height: { ideal: CAPTURE_HEIGHT },
+                facingMode: "user"
+            },
+            audio: false
+        });
+
+        els.cameraVideo.srcObject = cameraStream;
+        await els.cameraVideo.play();
+        els.cameraVideo.classList.add("camera-ready");
+        if (els.cameraPlaceholder) els.cameraPlaceholder.hidden = true;
+        setCameraState("카메라 작동 중", true);
+        showStatus("서버 분석을 시작합니다.", "TRACKING");
+
+        analyzeTimer = setInterval(captureAndAnalyzeFrame, ANALYZE_INTERVAL_MS);
+        captureAndAnalyzeFrame();
+    } catch (error) {
+        console.error("Camera start failed:", error);
+        showStatus(`카메라를 시작하지 못했습니다: ${error.message}`, "ERROR");
+        setText(els.feedbackText, "카메라 권한, 연결 상태, HTTPS 또는 localhost 접속 여부를 확인해 주세요.");
+        if (els.cameraPlaceholder) els.cameraPlaceholder.hidden = false;
+    }
+}
+
+async function captureAndAnalyzeFrame() {
+    if (isAnalyzing || !els.cameraVideo || !els.captureCanvas) return;
+    if (els.cameraVideo.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) return;
+
+    isAnalyzing = true;
+    const context = els.captureCanvas.getContext("2d");
+    els.captureCanvas.width = CAPTURE_WIDTH;
+    els.captureCanvas.height = CAPTURE_HEIGHT;
+    context.drawImage(els.cameraVideo, 0, 0, CAPTURE_WIDTH, CAPTURE_HEIGHT);
+    const image = els.captureCanvas.toDataURL("image/jpeg", JPEG_QUALITY);
+
+    try {
+        const response = await fetch("/analyze_frame", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                image,
+                exercise_key: selectedExercise.key
+            })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.error || "서버 분석에 실패했습니다.");
         }
-    }, 900);
+        applyAnalysisResult(result);
+    } catch (error) {
+        console.error("Frame analysis failed:", error);
+        showStatus("서버 분석 응답을 받지 못했습니다.", "ERROR");
+        setText(els.feedbackText, error.message);
+    } finally {
+        isAnalyzing = false;
+    }
+}
+
+function applyAnalysisResult(result) {
+    const accuracy = Number.isFinite(result.accuracy) ? result.accuracy : 0;
+    const angle = Number.isFinite(result.angle) ? result.angle : 0;
+    const targetAngle = Number.isFinite(result.target_angle) ? result.target_angle : selectedExercise.angle;
+
+    setText(els.exerciseState, result.state || "TRACKING");
+    setText(els.accuracyValue, `${Math.round(accuracy)}%`);
+    setText(els.angleValue, `${Math.round(angle)} / ${Math.round(targetAngle)}°`);
+    setText(els.feedbackText, result.feedback || "분석 결과를 화면에 반영했습니다.");
+    setText(els.cameraMessage, "카메라 프레임을 서버로 전송하고 있습니다.");
+
+    if (accuracy >= 90 && selectedExercise.target) {
+        currentRep = Math.min(currentRep + 1, selectedExercise.target);
+        setText(els.repCounter, `${currentRep} / ${selectedExercise.target}`);
+        if (currentRep >= selectedExercise.target) {
+            setText(els.exerciseState, "COMPLETE");
+            setText(els.cameraMessage, "오늘 운동을 완료했습니다.");
+        }
+    }
 }
 
 function returnHome() {
-    clearInterval(exerciseTimer);
-    if (els.video) els.video.pause();
     resetExerciseState();
     showView("home-view");
 }
@@ -186,7 +263,7 @@ setInterval(updateDateTime, 1000);
 renderExerciseList();
 renderSelectedExercise();
 
-if (els.startButton) els.startButton.addEventListener("click", startExerciseDemo);
+if (els.startButton) els.startButton.addEventListener("click", startCameraExercise);
 if (els.returnButton) els.returnButton.addEventListener("click", returnHome);
 
 document.querySelectorAll("[data-view]").forEach((button) => {
