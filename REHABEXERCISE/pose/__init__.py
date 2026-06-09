@@ -1,1 +1,1 @@
-"""자세 인식과 운동 피드백 계산 모듈입니다."""
+"""Pose analysis package for the rehab mirror server."""

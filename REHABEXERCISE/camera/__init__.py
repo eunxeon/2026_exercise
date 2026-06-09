@@ -1,1 +1,1 @@
-"""카메라 입력과 영상 스트림 관련 모듈입니다."""
+"""Camera helpers for future server-side capture support."""
