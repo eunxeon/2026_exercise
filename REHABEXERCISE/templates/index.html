@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rehab Mirror</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260608-camera">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260610-p49">
 </head>
 <body>
     <main class="mirror-screen">
@@ -52,7 +52,7 @@
                     <div class="today-list">
                         <button type="button" class="today-item selected-today" data-exercise="shoulder">
                             <span></span>
-                            <div><strong>어깨 들어올리기</strong><p>3세트 x 10회</p></div>
+                            <div><strong>앉아서 양팔 들고 몸통 돌리기</strong><p>왼쪽 · 정면 · 오른쪽</p></div>
                             <em>상체</em>
                         </button>
                         <button type="button" class="today-item" data-exercise="knee">
@@ -136,13 +136,22 @@
 
             <section class="training-view app-view" id="training-view">
                 <section class="video-stage camera-frame">
-                    <video id="camera-video" class="camera-video" autoplay muted playsinline></video>
-                    <canvas id="capture-canvas" class="capture-canvas" width="480" height="360"></canvas>
-                    <div class="video-fallback camera-placeholder" id="camera-placeholder">
-                        <span>카메라 대기</span>
-                        <strong id="fallback-title">어깨 들어올리기</strong>
-                        <p>운동 시작 후 카메라 권한을 허용해 주세요.</p>
+                    <video id="guide-video" class="guide-video" controls loop playsinline></video>
+                    <div class="guide-placeholder" id="guide-placeholder">
+                        <span>운동 가이드 영상</span>
+                        <strong id="guide-title">앉아서 양팔 들고 몸통 돌리기</strong>
+                        <p><code id="guide-path">static/videos/shoulder.mp4</code> 파일을 넣으면 이곳에서 재생됩니다.</p>
                     </div>
+                    <aside class="camera-preview" aria-label="실시간 카메라 화면">
+                        <video id="camera-video" class="camera-video" autoplay muted playsinline></video>
+                        <div class="video-fallback camera-placeholder" id="camera-placeholder">
+                            <span>카메라 대기</span>
+                            <strong id="fallback-title">앉아서 양팔 들고 몸통 돌리기</strong>
+                            <p>카메라 권한을 허용해 주세요.</p>
+                        </div>
+                        <div class="camera-preview-label">내 자세</div>
+                    </aside>
+                    <canvas id="capture-canvas" class="capture-canvas" width="480" height="360"></canvas>
                     <div class="mirror-corners" aria-hidden="true">
                         <span></span><span></span><span></span><span></span>
                     </div>
@@ -151,8 +160,8 @@
                 <section class="training-panel">
                     <article class="training-info">
                         <span>오늘의 재활운동</span>
-                        <h2 id="exercise-title">어깨 들어올리기</h2>
-                        <p id="exercise-description">통증 없는 범위에서 천천히 팔을 올리고 내립니다.</p>
+                        <h2 id="exercise-title">앉아서 양팔 들고 몸통 돌리기</h2>
+                        <p id="exercise-description">가이드 영상에 맞춰 양팔과 몸통을 움직입니다.</p>
                     </article>
                     <article class="rep-box">
                         <span id="exercise-state">READY</span>
@@ -177,6 +186,6 @@
         </section>
     </main>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260608-camera"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}?v=20260610-p49"></script>
 </body>
 </html>

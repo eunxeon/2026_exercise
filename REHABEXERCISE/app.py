@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from flask import Flask, jsonify, render_template, request
 
-from pose.exercise_feedback import analyze_exercise_frame
+from pose.exercise_feedback import analyze_exercise_frame, reset_exercise
 
 
 app = Flask(__name__)
@@ -42,25 +42,37 @@ def decode_data_url_frame(frame_data_url):
 
 @app.route("/analyze_frame", methods=["POST"])
 def analyze_frame():
-    """Receive one camera frame, run placeholder pose analysis, and return JSON."""
+    """Receive one camera frame, run pose analysis, and return JSON."""
     print("[/analyze_frame] request received")
 
     try:
         payload = request.get_json(silent=True) or {}
-        exercise_key = payload.get("exercise_key", "shoulder")
         frame_data_url = payload.get("image")
 
         frame = decode_data_url_frame(frame_data_url)
         print(f"[/analyze_frame] decoded frame: {frame.shape[1]}x{frame.shape[0]}")
 
+        exercise_key = payload.get("exercise_key", "shoulder")
         result = analyze_exercise_frame(frame, exercise_key=exercise_key)
-        print(f"[/analyze_frame] analysis result: {result}")
+        print(
+            "[/analyze_frame] "
+            f"angle={result.get('angle')} "
+            f"accuracy={result.get('accuracy')} "
+            f"state={result.get('state')}"
+        )
 
         return jsonify({"success": True, **result})
     except Exception as exc:
         print(f"[/analyze_frame] error: {exc}")
         traceback.print_exc()
         return jsonify({"success": False, "error": str(exc)}), 400
+
+
+@app.route("/reset_exercise", methods=["POST"])
+def reset_exercise_state():
+    payload = request.get_json(silent=True) or {}
+    reset_exercise(payload.get("exercise_key", "shoulder"))
+    return jsonify({"success": True})
 
 
 if __name__ == "__main__":

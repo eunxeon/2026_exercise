@@ -499,8 +499,9 @@ button {
 
 .training-view {
     display: grid;
-    grid-template-rows: 1fr 430px;
+    grid-template-rows: minmax(0, 1fr) 500px;
     gap: 16px;
+    overflow: hidden;
 }
 
 .video-stage {
@@ -515,13 +516,68 @@ button {
     isolation: isolate;
 }
 
-.camera-video {
+.guide-video {
     position: absolute;
-    inset: 0;
+    inset: 34px;
+    width: calc(100% - 68px);
+    height: calc(100% - 68px);
+    object-fit: contain;
+    background: #05080a;
+    z-index: 1;
+}
+
+.guide-placeholder {
+    max-width: 680px;
+    padding: 40px;
+    text-align: center;
+    z-index: 1;
+}
+
+.guide-placeholder[hidden] {
+    display: none;
+}
+
+.guide-placeholder span {
+    color: #38bdf8;
+    font-size: 22px;
+    font-weight: 900;
+}
+
+.guide-placeholder strong {
+    display: block;
+    margin: 16px 0;
+    font-size: 48px;
+}
+
+.guide-placeholder p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 20px;
+    line-height: 1.5;
+}
+
+.guide-placeholder code {
+    color: #86efac;
+}
+
+.camera-preview {
+    position: absolute;
+    top: 48px;
+    right: 48px;
+    width: 300px;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, 0.78);
+    border-radius: 10px;
+    background: #05080a;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.45);
+    z-index: 4;
+}
+
+.camera-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    background: #05080a;
     opacity: 0;
     transition: opacity 0.2s ease;
 }
@@ -535,8 +591,12 @@ button {
 }
 
 .video-fallback {
-    max-width: 620px;
-    padding: 34px;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 18px;
     text-align: center;
     z-index: 2;
 }
@@ -548,21 +608,33 @@ button {
 .video-fallback span {
     display: block;
     color: #38bdf8;
-    font-size: 21px;
+    font-size: 16px;
     font-weight: 900;
 }
 
 .video-fallback strong {
     display: block;
-    margin: 16px 0;
-    font-size: 52px;
+    margin: 10px 0;
+    font-size: 24px;
     line-height: 1.1;
 }
 
 .video-fallback p {
     margin: 0;
     color: var(--muted);
-    font-size: 22px;
+    font-size: 15px;
+}
+
+.camera-preview-label {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.8);
+    font-size: 15px;
+    font-weight: 900;
+    z-index: 5;
 }
 
 .mirror-corners span {
@@ -580,10 +652,11 @@ button {
 
 .training-panel {
     display: grid;
-    grid-template-columns: 1.25fr 1fr;
-    grid-template-rows: 1fr 1fr 82px;
-    gap: 14px;
-    padding: 18px;
+    grid-template-columns: 1.25fr 0.8fr 0.8fr;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) 84px;
+    gap: 12px;
+    padding: 16px;
+    overflow: hidden;
 }
 
 .training-info,
@@ -591,22 +664,22 @@ button {
 .metric-box,
 .feedback-box {
     min-width: 0;
-    padding: 18px;
+    padding: 15px;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--panel);
 }
 
-.training-info { grid-row: 1 / 3; }
-.rep-box { grid-column: 2; }
-.metric-box:nth-of-type(3),
-.metric-box:nth-of-type(4) { grid-column: 2; }
-.feedback-box { grid-column: 1; grid-row: 3; border-left: 4px solid var(--green); }
-.return-button { grid-column: 2; grid-row: 3; min-height: 100%; }
+.training-info { grid-column: 1; grid-row: 1 / 3; }
+.rep-box { grid-column: 2 / 4; grid-row: 1; }
+.metric-box:nth-of-type(3) { grid-column: 2; grid-row: 2; }
+.metric-box:nth-of-type(4) { grid-column: 3; grid-row: 2; }
+.feedback-box { grid-column: 1 / 3; grid-row: 3; border-left: 4px solid var(--green); }
+.return-button { grid-column: 3; grid-row: 3; min-height: 100%; }
 
 .training-panel h2 {
     margin: 8px 0 12px;
-    font-size: 30px;
+    font-size: 27px;
     line-height: 1.16;
 }
 
@@ -627,6 +700,23 @@ button {
     display: block;
     margin: 10px 0;
     color: #86efac;
-    font-size: 42px;
+    font-size: 36px;
     line-height: 1;
+}
+
+.training-panel p {
+    font-size: 18px;
+    line-height: 1.35;
+}
+
+.training-panel span {
+    font-size: 17px;
+}
+
+.feedback-box p {
+    overflow-wrap: anywhere;
+}
+
+.return-button {
+    font-size: 20px;
 }
