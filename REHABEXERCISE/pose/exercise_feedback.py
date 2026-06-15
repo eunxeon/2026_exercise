@@ -16,6 +16,7 @@ REFERENCE_METRICS = {
         "right_arm_raise_deg": 154.0,
         "left_elbow_deg": 164.0,
         "right_elbow_deg": 158.0,
+        "torso_rotation_deg": 11.2,
         "face_rotation_deg": -22.9,
     },
     "pose2_center": {
@@ -23,6 +24,7 @@ REFERENCE_METRICS = {
         "right_arm_raise_deg": 147.0,
         "left_elbow_deg": 164.0,
         "right_elbow_deg": 153.0,
+        "torso_rotation_deg": 1.6,
         "face_rotation_deg": 0.3,
     },
     "pose3_right": {
@@ -30,6 +32,7 @@ REFERENCE_METRICS = {
         "right_arm_raise_deg": 37.0,
         "left_elbow_deg": 167.0,
         "right_elbow_deg": 158.0,
+        "torso_rotation_deg": -41.0,
         "face_rotation_deg": 63.1,
     },
 }
@@ -39,6 +42,7 @@ THRESHOLDS = {
     "right_arm_raise_deg": 40.0,
     "left_elbow_deg": 35.0,
     "right_elbow_deg": 35.0,
+    "torso_rotation_deg": 35.0,
     "face_rotation_deg": 30.0,
 }
 
@@ -73,6 +77,14 @@ def _signed_offset_angle(center_x, reference_x, scale):
     return float(np.degrees(np.arcsin(ratio)))
 
 
+def _torso_rotation_angle(left_shoulder, right_shoulder):
+    shoulder_vector = right_shoulder - left_shoulder
+    horizontal_width = abs(float(shoulder_vector[0]))
+    if horizontal_width < 1e-6:
+        return None
+    return float(np.degrees(np.arctan2(shoulder_vector[2], horizontal_width)))
+
+
 def calculate_metrics(landmarks):
     left_shoulder = _point(landmarks, "LEFT_SHOULDER")
     right_shoulder = _point(landmarks, "RIGHT_SHOULDER")
@@ -102,6 +114,7 @@ def calculate_metrics(landmarks):
         "right_arm_raise_deg": right_raise,
         "left_elbow_deg": _joint_angle(left_shoulder, left_elbow, left_wrist),
         "right_elbow_deg": _joint_angle(right_shoulder, right_elbow, right_wrist),
+        "torso_rotation_deg": _torso_rotation_angle(left_shoulder, right_shoulder),
         "face_rotation_deg": _signed_offset_angle(nose[0], eye_center[0], eye_width),
     }
 
@@ -117,7 +130,7 @@ def evaluate_pose(pose_name, metrics):
     scoring_keys = (
         "left_arm_raise_deg",
         "right_arm_raise_deg",
-        "face_rotation_deg",
+        "torso_rotation_deg",
     )
     scores = {
         key: _metric_score(metrics.get(key), reference[key], THRESHOLDS[key])
@@ -125,8 +138,14 @@ def evaluate_pose(pose_name, metrics):
     }
     accuracy = round(sum(scores.values()) / len(scores))
     arms_ok = min(scores["left_arm_raise_deg"], scores["right_arm_raise_deg"]) >= 35
-    face_ok = scores["face_rotation_deg"] >= 25
-    is_correct = arms_ok and face_ok and accuracy >= 60
+    torso_rotation = metrics.get("torso_rotation_deg")
+    if pose_name == "pose1_left":
+        torso_ok = torso_rotation is not None and torso_rotation >= 7.0
+    elif pose_name == "pose2_center":
+        torso_ok = torso_rotation is not None and abs(torso_rotation) <= 10.0
+    else:
+        torso_ok = torso_rotation is not None and torso_rotation <= -15.0
+    is_correct = arms_ok and torso_ok and accuracy >= 60
 
     average_arm = (
         metrics["left_arm_raise_deg"] + metrics["right_arm_raise_deg"]
@@ -141,20 +160,28 @@ def evaluate_pose(pose_name, metrics):
             feedback.append("양팔을 영상보다 조금 더 올려주세요.")
         else:
             feedback.append("양팔을 영상 높이에 맞게 조금 내려주세요.")
-    if not face_ok:
+    if not torso_ok:
         if pose_name == "pose1_left":
-            feedback.append("몸과 고개를 왼쪽으로 더 돌려주세요.")
+            feedback.append("고개만 돌리지 말고 몸통을 왼쪽으로 더 돌려주세요.")
         elif pose_name == "pose2_center":
-            feedback.append("몸과 고개를 정면으로 돌려주세요.")
+            feedback.append("양쪽 어깨가 정면을 향하도록 몸통을 돌려주세요.")
         else:
-            feedback.append("몸과 고개를 오른쪽으로 더 돌려주세요.")
+            feedback.append("고개만 돌리지 말고 몸통을 오른쪽으로 더 돌려주세요.")
 
     if is_correct:
         feedback = ["좋습니다. 현재 자세를 잠시 유지해주세요."]
     elif not feedback:
         feedback = ["영상 자세와 비슷합니다. 조금만 더 맞춰주세요."]
 
-    return is_correct, accuracy, " ".join(feedback[:2]), round(average_arm), round(target_arm)
+    return (
+        is_correct,
+        accuracy,
+        " ".join(feedback[:2]),
+        round(average_arm),
+        round(target_arm),
+        round(torso_rotation) if torso_rotation is not None else None,
+        round(reference["torso_rotation_deg"]),
+    )
 
 
 class SequentialExerciseTracker:
@@ -174,13 +201,19 @@ class SequentialExerciseTracker:
         self.last_update = time.monotonic()
 
         if self.completed:
-            return self._result(100, "전체 동작을 완료했습니다.", 0, 0)
+            return self._result(100, "전체 동작을 완료했습니다.", 0, 0, 0, 0)
 
         pose_name = POSE_SEQUENCE[self.current_stage]
         metrics = calculate_metrics(landmarks)
-        is_correct, accuracy, feedback, angle, target_angle = evaluate_pose(
-            pose_name, metrics
-        )
+        (
+            is_correct,
+            accuracy,
+            feedback,
+            angle,
+            target_angle,
+            torso_rotation,
+            target_torso_rotation,
+        ) = evaluate_pose(pose_name, metrics)
 
         if self.cooldown_count > 0:
             self.cooldown_count -= 1
@@ -202,9 +235,24 @@ class SequentialExerciseTracker:
             else:
                 feedback = "단계를 완료했습니다. 다음 동작을 준비해주세요."
 
-        return self._result(accuracy, feedback, angle, target_angle)
+        return self._result(
+            accuracy,
+            feedback,
+            angle,
+            target_angle,
+            torso_rotation,
+            target_torso_rotation,
+        )
 
-    def _result(self, accuracy, feedback, angle, target_angle):
+    def _result(
+        self,
+        accuracy,
+        feedback,
+        angle,
+        target_angle,
+        torso_rotation,
+        target_torso_rotation,
+    ):
         completed_stages = len(POSE_SEQUENCE) if self.completed else self.current_stage
         stage_index = min(self.current_stage, len(POSE_SEQUENCE) - 1)
         pose_name = POSE_SEQUENCE[stage_index]
@@ -212,6 +260,8 @@ class SequentialExerciseTracker:
             "accuracy": accuracy,
             "angle": angle,
             "target_angle": target_angle,
+            "torso_rotation": torso_rotation,
+            "target_torso_rotation": target_torso_rotation,
             "feedback": feedback,
             "state": "COMPLETE" if self.completed else f"STAGE_{stage_index + 1}",
             "stage": stage_index + 1,
@@ -237,6 +287,8 @@ def _unavailable_result(state, feedback):
         "accuracy": 0,
         "angle": 0,
         "target_angle": 0,
+        "torso_rotation": 0,
+        "target_torso_rotation": 0,
         "feedback": feedback,
         "state": state,
         "stage": stage_index + 1,

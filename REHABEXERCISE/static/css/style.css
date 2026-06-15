@@ -3,7 +3,7 @@
 }
 
 :root {
-    --bg: #1f2937;
+    --bg: #000000;
     --panel: #334155;
     --panel-dark: #2f3b4d;
     --panel-soft: #3b4658;
@@ -15,14 +15,16 @@
     --purple: #8b5cf6;
     --red: #ef4444;
     --mirror-scale: 1;
+    --mirror-top-offset: 5vh;
 }
 
 html,
 body {
     width: 100%;
+    height: 100%;
     min-height: 100%;
     margin: 0;
-    background: #101827;
+    background: #000000;
     color: var(--text);
     font-family: "Pretendard", "Noto Sans KR", "Segoe UI", sans-serif;
 }
@@ -41,18 +43,39 @@ button {
     width: 1080px;
     height: 1920px;
     position: absolute;
-    top: 50%;
+    top: var(--mirror-top-offset);
     left: 50%;
-    transform: translate(-50%, -50%) scale(var(--mirror-scale));
-    transform-origin: center center;
+    transform: translateX(-50%) scale(var(--mirror-scale));
+    transform-origin: top center;
     padding: 24px 18px;
-    background: var(--bg);
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    border-radius: 18px;
+    background: #000000;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
 }
 
 .view-stack {
     position: relative;
     width: 100%;
     height: 100%;
+    background: #000000;
+}
+
+@media (max-aspect-ratio: 9 / 16) {
+    :root {
+        --mirror-top-offset: 5vh;
+    }
+}
+
+@media (orientation: landscape) {
+    :root {
+        --mirror-top-offset: 5vh;
+    }
+
+    .mirror-screen {
+        width: 1920px;
+    }
 }
 
 .app-view {
@@ -704,6 +727,11 @@ button {
     line-height: 1;
 }
 
+#angle-value {
+    font-size: 22px;
+    line-height: 1.3;
+}
+
 .training-panel p {
     font-size: 18px;
     line-height: 1.35;
@@ -720,3 +748,145 @@ button {
 .return-button {
     font-size: 20px;
 }
+
+/* Device pairing and user selection flow */
+.pairing-view,
+.user-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 70px;
+    background: radial-gradient(circle at 50% 28%, rgba(16, 185, 129, 0.14), transparent 38%), #000;
+}
+
+.brand {
+    margin-bottom: 38px;
+    color: #86efac;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 0.3em;
+}
+
+.pairing-card {
+    width: 100%;
+    max-width: 850px;
+    padding: 70px 64px 48px;
+    border: 1px solid rgba(52, 211, 153, 0.38);
+    border-radius: 30px;
+    background: rgba(30, 41, 59, 0.9);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55), inset 0 1px rgba(255, 255, 255, 0.06);
+    text-align: center;
+}
+
+.eyebrow {
+    color: #6ee7b7;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+}
+
+.pairing-card h1,
+.flow-header h1 {
+    margin: 18px 0;
+    font-size: 54px;
+    line-height: 1.15;
+}
+
+.lead,
+.flow-header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 27px;
+    line-height: 1.5;
+}
+
+.pairing-code {
+    margin: 58px 0 20px;
+    padding: 38px 24px;
+    border: 2px solid rgba(110, 231, 183, 0.6);
+    border-radius: 22px;
+    background: rgba(2, 6, 23, 0.85);
+    color: #ecfdf5;
+    font-family: Consolas, monospace;
+    font-size: 104px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    text-indent: 0.16em;
+    text-shadow: 0 0 28px rgba(52, 211, 153, 0.4);
+}
+
+.pairing-timer {
+    margin: 0 0 32px;
+    color: #a7f3d0;
+    font-size: 27px;
+    font-weight: 800;
+}
+
+.primary-button {
+    min-height: 72px;
+    padding: 0 34px;
+    border: 0;
+    border-radius: 14px;
+    background: #10b981;
+    color: #fff;
+    font-size: 24px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.pairing-status {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-top: 42px;
+    padding: 26px 30px;
+    border-radius: 18px;
+    background: rgba(15, 23, 42, 0.7);
+    text-align: left;
+}
+
+.pairing-status strong { display: block; margin-bottom: 8px; font-size: 23px; }
+.pairing-status p { margin: 0; color: var(--muted); font-size: 19px; line-height: 1.5; }
+.spinner { width: 30px; height: 30px; flex: 0 0 auto; border: 4px solid rgba(52, 211, 153, 0.25); border-top-color: #34d399; border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.test-button,
+.text-button {
+    margin-top: 30px;
+    border: 0;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 18px;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.user-view { justify-content: flex-start; padding-top: 260px; }
+.flow-header { width: 100%; max-width: 850px; margin-bottom: 50px; text-align: center; }
+.user-list { width: 100%; max-width: 850px; display: grid; gap: 24px; }
+.user-card {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    align-items: center;
+    gap: 26px;
+    padding: 32px;
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    background: var(--panel);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+}
+.user-card:hover { border-color: #34d399; transform: translateY(-2px); }
+.user-avatar { width: 86px; height: 86px; display: grid; place-items: center; border-radius: 50%; background: linear-gradient(135deg, #059669, #34d399); font-size: 38px; font-weight: 900; }
+.user-copy strong { display: block; margin-bottom: 10px; font-size: 34px; }
+.user-copy em { display: block; color: #86efac; font-size: 23px; font-style: normal; font-weight: 800; }
+.user-card b { padding: 12px 20px; border-radius: 999px; background: rgba(16, 185, 129, 0.18); color: #86efac; font-size: 20px; }
+
+.home-view { grid-template-rows: 164px 154px 690px 1fr; }
+.quick-actions { grid-template-rows: repeat(2, 1fr); }
+.selected-panel .primary-button { width: 100%; margin-top: 18px; }
+#capture-canvas { display: none; }
