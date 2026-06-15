@@ -1,14 +1,27 @@
 import base64
+import logging
+import os
 import traceback
 
 import cv2
 import numpy as np
 from flask import Flask, jsonify, render_template, request
 
-from pose.exercise_feedback import analyze_exercise_frame
+from pose.exercise_feedback import analyze_exercise_frame, reset_exercise
 
 
 app = Flask(__name__)
+DEBUG_MODE = os.getenv("DEBUG_MODE", "0").lower() in {"1", "true", "yes", "on"}
+_last_analysis_state = None
+MAJOR_ANALYSIS_STATES = {"STAGE_1", "STAGE_2", "STAGE_3", "COMPLETE"}
+
+if not DEBUG_MODE:
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
+
+
+def debug_log(message):
+    if DEBUG_MODE:
+        print(message, flush=True)
 
 
 @app.route("/")
@@ -42,26 +55,56 @@ def decode_data_url_frame(frame_data_url):
 
 @app.route("/analyze_frame", methods=["POST"])
 def analyze_frame():
-    """Receive one camera frame, run placeholder pose analysis, and return JSON."""
-    print("[/analyze_frame] request received")
-
+    """Receive one camera frame, run pose analysis, and return JSON."""
     try:
         payload = request.get_json(silent=True) or {}
-        exercise_key = payload.get("exercise_key", "shoulder")
         frame_data_url = payload.get("image")
 
         frame = decode_data_url_frame(frame_data_url)
-        print(f"[/analyze_frame] decoded frame: {frame.shape[1]}x{frame.shape[0]}")
+        debug_log(f"[/analyze_frame] decoded frame: {frame.shape[1]}x{frame.shape[0]}")
 
+        exercise_key = payload.get("exercise_key", "shoulder")
         result = analyze_exercise_frame(frame, exercise_key=exercise_key)
-        print(f"[/analyze_frame] analysis result: {result}")
+        debug_log(
+            "[/analyze_frame] "
+            f"angle={result.get('angle')} "
+            f"accuracy={result.get('accuracy')} "
+            f"state={result.get('state')}"
+        )
+
+        global _last_analysis_state
+        current_state = result.get("state")
+        if current_state != _last_analysis_state:
+            if DEBUG_MODE or current_state in MAJOR_ANALYSIS_STATES:
+                print(
+                    f"[analysis] state: {_last_analysis_state or 'START'} -> {current_state}",
+                    flush=True,
+                )
+            _last_analysis_state = current_state
 
         return jsonify({"success": True, **result})
     except Exception as exc:
-        print(f"[/analyze_frame] error: {exc}")
-        traceback.print_exc()
+        print(f"[/analyze_frame] error: {exc}", flush=True)
+        if DEBUG_MODE:
+            traceback.print_exc()
         return jsonify({"success": False, "error": str(exc)}), 400
 
 
+@app.route("/reset_exercise", methods=["POST"])
+def reset_exercise_state():
+    global _last_analysis_state
+    payload = request.get_json(silent=True) or {}
+    exercise_key = payload.get("exercise_key", "shoulder")
+    reset_exercise(exercise_key)
+    _last_analysis_state = None
+    print(f"[exercise] reset: {exercise_key}", flush=True)
+    return jsonify({"success": True})
+
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    print(
+        f"[server] Rehab Mirror starting on http://0.0.0.0:5000 "
+        f"(debug logs: {'on' if DEBUG_MODE else 'off'})",
+        flush=True,
+    )
+    app.run(host="0.0.0.0", port=5000, debug=DEBUG_MODE, use_reloader=DEBUG_MODE)

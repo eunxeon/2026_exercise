@@ -1,84 +1,78 @@
-# Rehab Mirror
+# Rehab Exercise
 
-Flask 기반 재활 스마트미러 예제입니다. 라즈베리파이 Chromium 브라우저에서 카메라를 켜고, 캡처한 프레임을 서버 PC의 Flask API로 보내 분석 결과를 화면에 표시합니다.
+라즈베리파이 Chromium 브라우저에서 카메라 프레임을 캡처해 서버 PC의 Flask 서버로 전송하고, 서버의 `/analyze_frame` API가 프레임을 분석해 JSON 결과를 반환하는 재활 운동 테스트 프로젝트입니다.
+
+## 현재 단계
+
+현재 단계는 **실제 MediaPipe 관절 분석 1차 적용**입니다.
+
+- `/analyze_frame` API는 기존 통신 구조를 유지합니다.
+- 브라우저의 카메라 전송 구조와 `static/js/main.js`는 변경하지 않았습니다.
+- DB는 아직 연결하지 않았습니다.
+- 운동 기준값은 코드 내부 상수로 임시 정의해 테스트합니다.
+- 우선 팔 들어올리기 운동 하나만 분석합니다.
+
+## 분석 방식
+
+서버는 OpenCV BGR 프레임을 RGB로 변환한 뒤 MediaPipe Pose에 입력합니다. 감지된 landmark 중 다음 관절 좌표를 사용합니다.
+
+- `LEFT_SHOULDER`, `LEFT_ELBOW`, `LEFT_WRIST`
+- `RIGHT_SHOULDER`, `RIGHT_ELBOW`, `RIGHT_WRIST`
+- `LEFT_HIP`, `RIGHT_HIP`
+
+팔 들어올리기 운동은 어깨를 기준으로 엉덩이-어깨-팔꿈치 각도를 계산합니다. 목표 각도는 `80도`, 허용 범위는 `±10도`입니다.
 
 ## 서버 PC 실행
 
-1. 프로젝트 폴더로 이동합니다.
-
 ```powershell
 cd C:\Users\User\VScode-workspace\REHABEXERCISE
-```
-
-2. 가상환경을 만들고 활성화합니다.
-
-```powershell
 python -m venv .venv
 .\.venv\Scripts\activate
-```
-
-3. 패키지를 설치합니다.
-
-```powershell
-pip install flask opencv-python numpy
-```
-
-4. 서버를 실행합니다.
-
-```powershell
+pip install -r requirements.txt
 python app.py
 ```
 
 서버는 `host="0.0.0.0"`, `port=5000`으로 실행되므로 같은 네트워크의 라즈베리파이에서 접속할 수 있습니다.
 
-## 서버 PC IP 확인
-
-Windows PowerShell에서 다음 명령을 실행합니다.
-
-```powershell
-ipconfig
-```
-
-무선랜 또는 유선랜 항목의 `IPv4 주소`를 확인합니다. 예를 들어 `192.168.0.25`라면 라즈베리파이에서는 `http://192.168.0.25:5000`으로 접속합니다.
-
-## Windows 방화벽
-
-라즈베리파이에서 접속이 되지 않으면 Windows Defender 방화벽에서 Python 또는 TCP 포트 `5000` 인바운드 연결을 허용합니다. 같은 Wi-Fi에 연결되어 있는지도 함께 확인하세요.
-
 ## 라즈베리파이 Chromium 접속
 
 1. 서버 PC와 라즈베리파이를 같은 네트워크에 연결합니다.
-2. 라즈베리파이에서 Chromium을 실행합니다.
-3. `http://서버PC_IP:5000`으로 접속합니다.
-4. `선택한 운동 시작` 버튼을 누릅니다.
-5. 카메라 권한 요청이 나오면 허용합니다.
-6. 카메라 화면이 보이고 정확도, 각도, 피드백 문구가 갱신되는지 확인합니다.
+2. 서버 PC에서 `ipconfig`로 IPv4 주소를 확인합니다.
+3. 라즈베리파이 Chromium에서 `http://서버PC_IP:5000`으로 접속합니다.
+4. 카메라 권한을 허용합니다.
+5. 카메라 앞에 서서 팔 들어올리기 자세를 테스트합니다.
 
-## 동작 확인 순서
+## 테스트 방법
 
-1. 서버 PC에서 `python app.py` 실행
-2. 서버 PC 브라우저에서 `http://127.0.0.1:5000` 접속
-3. 서버 PC 브라우저에서 `http://127.0.0.1:5000/health` 확인
-4. 라즈베리파이 Chromium에서 `http://서버PC_IP:5000` 접속
-5. `선택한 운동 시작` 클릭
-6. 카메라 권한 허용
-7. 카메라 화면 표시 확인
-8. 정확도, 현재/목표 각도, 피드백 문구가 서버 응답으로 갱신되는지 확인
-9. 서버 터미널에 `[/analyze_frame]` 요청 로그가 찍히는지 확인
+1. 서버 PC에서 `python app.py`를 실행합니다.
+2. 브라우저에서 `http://127.0.0.1:5000/health`가 `{"status":"ok"}`를 반환하는지 확인합니다.
+3. 라즈베리파이 Chromium에서 서버 페이지에 접속합니다.
+4. 카메라 프레임이 전송되면 서버 터미널에서 다음 형태의 로그를 확인합니다.
 
-## 오류 체크리스트
+```text
+[/analyze_frame] decoded frame: 480x360
+[/analyze_frame] angle=82 accuracy=96 state=TRACKING
+```
 
-- 라즈베리파이에서 화면이 열리지 않으면 서버 PC IP, 같은 네트워크 연결, 방화벽을 확인합니다.
-- 화면은 열리지만 카메라가 켜지지 않으면 Chromium 카메라 권한과 카메라 장치 연결을 확인합니다.
-- 카메라는 켜지는데 피드백이 바뀌지 않으면 서버 터미널에 `/analyze_frame` 로그가 찍히는지 확인합니다.
-- getUserMedia가 실패하면 `localhost`가 아닌 원격 주소 접속에서 브라우저 보안 정책이 영향을 줄 수 있습니다. Chromium 설정과 네트워크 환경을 확인합니다.
+5. 사람이 보이지 않으면 `state`가 `NO_PERSON`으로 반환됩니다.
+6. 팔, 어깨, 엉덩이 관절의 신뢰도가 낮으면 `state`가 `LOW_VISIBILITY`로 반환됩니다.
 
-## 이번 작업에서 바뀐 파일
+## 주요 응답 예시
 
-- `app.py`: `/health`, `/analyze_frame` API와 base64 이미지 디코딩을 추가했습니다.
-- `templates/index.html`: 훈련 화면에 실제 카메라 `video`와 숨김 `canvas`를 추가했습니다.
-- `static/js/main.js`: 브라우저 카메라 권한 요청, 프레임 캡처, 서버 전송, 응답 반영 로직을 추가했습니다.
-- `static/css/style.css`: 카메라 화면과 placeholder/canvas 표시 스타일을 정리했습니다.
-- `pose/pose_detector.py`: OpenCV 프레임을 받는 placeholder 자세 감지 구조를 추가했습니다.
-- `pose/exercise_feedback.py`: 서버 연결 확인용 분석 결과 생성 함수를 추가했습니다.
-- `camera/camera_stream.py`: 향후 서버 측 카메라 입력을 위한 OpenCV 래퍼를 추가했습니다.
+```json
+{
+  "success": true,
+  "accuracy": 92,
+  "angle": 82,
+  "target_angle": 80,
+  "feedback": "좋아요! 현재 자세가 목표 각도에 가깝습니다.",
+  "state": "TRACKING"
+}
+```
+
+## 수정한 파일
+
+- `app.py`: `/analyze_frame`에서 실제 어깨 운동 분석을 호출하고 angle, accuracy, state 로그를 출력합니다.
+- `pose/pose_detector.py`: MediaPipe Pose로 사람 landmark를 추출하고 `NO_PERSON`, `LOW_VISIBILITY`, `TRACKING` 상태를 반환합니다.
+- `pose/exercise_feedback.py`: 팔 들어올리기 운동의 어깨 각도, 정확도, 피드백을 계산합니다.
+- `requirements.txt`: Flask, OpenCV, NumPy, MediaPipe 의존성을 포함합니다.
