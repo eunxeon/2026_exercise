@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rehab Mirror</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260611-demo-long">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260708-api-demo">
 </head>
 <body>
 <main class="mirror-screen">
@@ -20,9 +20,8 @@
                 <button type="button" class="primary-button" id="new-code-button">새 코드 발급</button>
                 <div class="pairing-status">
                     <span class="spinner" aria-hidden="true"></span>
-                    <div><strong>등록 상태 확인 중</strong><p>앱에서 등록을 완료하면 자동으로 다음 화면으로 이동합니다.</p></div>
+                    <div><strong id="pairing-status-title">등록 상태 확인 중</strong><p id="pairing-status-message">앱에서 등록을 완료하면 자동으로 다음 화면으로 이동합니다.</p></div>
                 </div>
-                <!-- TODO: 실제 API 연동 시 발표용 버튼을 제거한다. -->
                 <button type="button" class="test-button" id="complete-pairing-button">등록 완료 테스트</button>
             </article>
         </section>
@@ -33,7 +32,6 @@
                 <h1>사용자를 선택해주세요</h1>
                 <p>운동을 시작할 사용자 카드를 눌러주세요.</p>
             </header>
-            <!-- TODO: GET /api/devices/{deviceId}/users 응답으로 교체한다. -->
             <div class="user-list" id="user-list"></div>
             <button type="button" class="text-button" data-view="pairing-view">기기 등록 화면으로 돌아가기</button>
         </section>
@@ -48,12 +46,8 @@
                 <div><strong id="current-time">00:00</strong><p id="current-date">0000. 00. 00.</p></div><span>REHAB MIRROR</span>
             </section>
             <section class="today-card">
-                <div class="card-heading"><div><span>오늘의 운동</span><h2>운동을 선택해주세요</h2></div><strong>3개</strong></div>
-                <div class="today-list">
-                    <button type="button" class="today-item selected-today" data-exercise="shoulder"><i></i><div><strong>앉아서 양팔 들고 몸통 돌리기</strong><p>상체 · 정면 · 좌우</p></div><em>상체</em></button>
-                    <button type="button" class="today-item" data-exercise="knee"><i></i><div><strong>무릎 굽혔다 펴기</strong><p>2세트 × 15회</p></div><em>하체</em></button>
-                    <button type="button" class="today-item" data-exercise="flexibility"><i></i><div><strong>옆구리 늘리기</strong><p>3세트 × 12회</p></div><em>유연성</em></button>
-                </div>
+                <div class="card-heading"><div><span>오늘의 운동</span><h2>운동을 선택해주세요</h2></div><strong id="today-count">0개</strong></div>
+                <div class="today-list" id="today-list"></div>
                 <button type="button" class="start-button" id="start-button">선택한 운동 시작</button>
             </section>
             <section class="quick-actions">
@@ -91,6 +85,6 @@
         </section>
     </section>
 </main>
-<script src="{{ url_for('static', filename='js/main.js') }}?v=20260611-demo-independent-timing"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}?v=20260708-api-demo"></script>
 </body>
 </html>

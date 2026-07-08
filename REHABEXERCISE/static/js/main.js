@@ -3,7 +3,8 @@ const CAPTURE_HEIGHT = 360;
 const ANALYZE_INTERVAL_MS = 600;
 const ANALYZE_TIMEOUT_MS = 4000;
 const PAIRING_SECONDS = 600;
-const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const DEFAULT_DEVICE_ID = "mirror-demo-001";
+const PAIRING_STATUS_INTERVAL_MS = 3000;
 const DEMO_MODE = new URLSearchParams(window.location.search).get("demo") === "1";
 const DEMO_INITIAL_DELAY_MS = 6000;
 const DEMO_STEP_DELAY_MS = 2600;
@@ -16,20 +17,12 @@ function updateMirrorScale() {
     document.documentElement.style.setProperty("--mirror-scale", scale);
 }
 
-const users = [
-    { id: "user-1", name: "김영희", program: "무릎 운동", goal: "낙상 예방" },
-    { id: "user-2", name: "박철수", program: "어깨 운동", goal: "관절 가동 범위 유지" }
-];
-
-const exercises = [
-    { key: "shoulder", name: "앉아서 양팔 들고 몸통 돌리기", category: "어깨·몸통 재활", part: "상체", target: 3, duration: "약 1분", angle: 155, description: "의자에 앉아 양팔을 들고 몸통을 좌우로 천천히 움직입니다.", guide: "가이드 영상에 맞춰 양팔과 몸통을 천천히 움직입니다." },
-    { key: "knee", name: "무릎 굽혔다 펴기", category: "무릎 재활", part: "하체", target: 15, duration: "약 7분", angle: 70, description: "무릎을 안정적으로 굽혔다 펴며 하체 움직임을 확인합니다.", guide: "의자나 벽을 가까이 두고 통증이 없는 범위에서 진행하세요." },
-    { key: "flexibility", name: "옆구리 늘리기", category: "유연성", part: "상체", target: 12, duration: "약 6분", angle: 75, description: "몸통을 천천히 기울여 옆구리와 허리를 이완합니다.", guide: "반동을 주지 말고 편안하게 호흡하며 움직이세요." },
-    { key: "balance", name: "균형 잡기", category: "낙상 예방", part: "전신", target: 12, duration: "약 7분", angle: 65, description: "자세 흔들림을 줄이고 일상 보행 안정성을 높입니다.", guide: "필요하면 보호자나 벽을 가까이 두고 진행하세요." }
-];
-
-let selectedExercise = exercises[0];
+let deviceId = DEFAULT_DEVICE_ID;
+let users = [];
+let exercises = [];
+let selectedExercise = null;
 let pairingRemaining = PAIRING_SECONDS;
+let pairingPollTimer = null;
 let cameraStream = null;
 let analyzeTimer = null;
 let isAnalyzing = false;
@@ -43,6 +36,26 @@ let demoCompleted = false;
 const el = (id) => document.getElementById(id);
 
 function setText(node, value) { if (node) node.textContent = value; }
+
+async function fetchJSON(url, options = {}) {
+    const response = await fetch(url, {
+        headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+        ...options
+    });
+    const data = await response.json();
+    if (!response.ok || data.success === false) {
+        throw new Error(data.error || `요청에 실패했습니다: ${url}`);
+    }
+    return data;
+}
+
+function isExerciseSupported(exercise) {
+    return Boolean(exercise && exercise.analysis_supported);
+}
+
+function getSelectedOrFirstExercise() {
+    return selectedExercise || exercises.find(isExerciseSupported) || exercises[0] || null;
+}
 
 function stopCameraExercise() {
     clearInterval(analyzeTimer);
@@ -62,27 +75,66 @@ function showView(viewId) {
     document.querySelectorAll(".app-view").forEach((view) => view.classList.toggle("active-view", view.id === viewId));
 }
 
-function generatePairingCode() {
-    const values = new Uint32Array(6);
-    crypto.getRandomValues(values);
-    return Array.from(values, (value) => CODE_CHARS[value % CODE_CHARS.length]).join("");
-}
-
 function updatePairingTimer() {
     const minutes = String(Math.floor(pairingRemaining / 60)).padStart(2, "0");
     const seconds = String(pairingRemaining % 60).padStart(2, "0");
     setText(el("pairing-timer"), `남은 시간: ${minutes}:${seconds}`);
 }
 
-function issuePairingCode() {
-    // TODO: POST /api/devices/pairing-code 응답으로 코드와 만료 시간을 설정한다.
-    setText(el("pairing-code"), generatePairingCode());
-    pairingRemaining = PAIRING_SECONDS;
+async function issuePairingCode() {
+    try {
+        const data = await fetchJSON(`/api/devices/${deviceId}/pairing-code`, { method: "POST" });
+        pairingRemaining = Number.isFinite(data.expires_in) ? data.expires_in : PAIRING_SECONDS;
+        setText(el("pairing-code"), data.code || "------");
+        setText(el("pairing-status-title"), "등록 상태 확인 중");
+        setText(el("pairing-status-message"), "앱에서 등록을 완료하면 자동으로 다음 화면으로 이동합니다.");
+    } catch (error) {
+        pairingRemaining = PAIRING_SECONDS;
+        setText(el("pairing-code"), "ERROR");
+        setText(el("pairing-status-title"), "코드 발급 실패");
+        setText(el("pairing-status-message"), error.message);
+    }
     updatePairingTimer();
 }
 
+async function refreshPairingStatus() {
+    try {
+        const data = await fetchJSON(`/api/devices/${deviceId}/pairing-status`);
+        if (Number.isFinite(data.expires_in)) {
+            pairingRemaining = data.expires_in;
+            updatePairingTimer();
+        }
+        if (data.paired) {
+            setText(el("pairing-status-title"), "등록 완료");
+            setText(el("pairing-status-message"), "사용자 목록을 불러왔습니다.");
+            await loadUsers();
+            if (pairingPollTimer) {
+                clearInterval(pairingPollTimer);
+                pairingPollTimer = null;
+            }
+            showView("user-view");
+        }
+    } catch (error) {
+        setText(el("pairing-status-title"), "등록 상태 확인 실패");
+        setText(el("pairing-status-message"), error.message);
+    }
+}
+
+async function completePairingForDemo() {
+    try {
+        await fetchJSON(`/api/devices/${deviceId}/pairing-status/demo-complete`, { method: "POST" });
+        await refreshPairingStatus();
+    } catch (error) {
+        setText(el("pairing-status-title"), "등록 테스트 실패");
+        setText(el("pairing-status-message"), error.message);
+    }
+}
+
 function renderUsers() {
-    // TODO: GET /api/devices/{deviceId}/users 응답으로 목록을 교체한다.
+    if (!users.length) {
+        el("user-list").innerHTML = `<p class="empty-state">등록된 사용자가 없습니다.</p>`;
+        return;
+    }
     el("user-list").innerHTML = users.map((user) => `
         <button type="button" class="user-card" data-user-id="${user.id}">
             <span class="user-avatar">${user.name[0]}</span>
@@ -93,43 +145,95 @@ function renderUsers() {
 
 function selectUser(userId) {
     const user = users.find((item) => item.id === userId) || users[0];
+    if (!user) return;
     setText(el("home-avatar"), user.name[0]);
     setText(el("home-user-name"), `${user.name} 님`);
     setText(el("home-user-program"), `${user.program} · ${user.goal}`);
     showView("home-view");
 }
 
+function exerciseMetaText(exercise) {
+    const status = isExerciseSupported(exercise) ? exercise.duration : `${exercise.duration} · 준비 중`;
+    return `${exercise.part} · ${exercise.target}회 · ${status}`;
+}
+
+function renderTodayExercises() {
+    const todayExercises = exercises.filter((exercise) => exercise.is_today);
+    setText(el("today-count"), `${todayExercises.length}개`);
+    el("today-list").innerHTML = todayExercises.map((exercise) => {
+        const supported = isExerciseSupported(exercise);
+        const selected = selectedExercise && selectedExercise.key === exercise.key;
+        return `
+            <button type="button" class="today-item ${selected ? "selected-today" : ""} ${supported ? "" : "is-disabled"}" data-exercise="${exercise.key}">
+                <i></i><div><strong>${exercise.name}</strong><p>${exerciseMetaText(exercise)}</p></div><em>${supported ? exercise.part : "준비 중"}</em>
+            </button>`;
+    }).join("");
+}
+
 function renderExerciseList() {
     setText(el("exercise-count"), `${exercises.length}개`);
-    el("exercise-list").innerHTML = exercises.map((exercise) => `
-        <button type="button" class="exercise-row" data-exercise="${exercise.key}">
-            <span>${exercise.category}</span><div><strong>${exercise.name}</strong><em>${exercise.part} · ${exercise.target}회 · ${exercise.duration}</em></div>
-        </button>`).join("");
+    el("exercise-list").innerHTML = exercises.map((exercise) => {
+        const supported = isExerciseSupported(exercise);
+        return `
+            <button type="button" class="exercise-row ${supported ? "" : "is-disabled"}" data-exercise="${exercise.key}">
+                <span>${exercise.category}</span><div><strong>${exercise.name}</strong><em>${exerciseMetaText(exercise)}</em></div>
+            </button>`;
+    }).join("");
 }
 
 function renderSelectedExercise() {
+    selectedExercise = getSelectedOrFirstExercise();
+    if (!selectedExercise) return;
+    const supported = isExerciseSupported(selectedExercise);
+    const supportMessage = selectedExercise.support_message || "이 운동 분석은 추후 지원 예정입니다.";
     setText(el("selected-title"), selectedExercise.name);
-    setText(el("selected-description"), selectedExercise.description);
+    setText(el("selected-description"), supported ? selectedExercise.description : `${selectedExercise.description} ${supportMessage}`);
     setText(el("exercise-title"), selectedExercise.name);
-    setText(el("exercise-description"), selectedExercise.guide);
+    setText(el("exercise-description"), supported ? selectedExercise.guide : supportMessage);
     setText(el("rep-counter"), `${currentRep} / ${selectedExercise.target}`);
-    setText(el("angle-value"), `-- / ${selectedExercise.angle}°`);
+    setText(el("angle-value"), supported ? `-- / ${selectedExercise.angle}°` : "준비 중");
     setText(el("fallback-title"), selectedExercise.name);
     setText(el("guide-title"), selectedExercise.name);
-    setText(el("guide-path"), `static/videos/${selectedExercise.key}.mp4`);
+    setText(el("guide-path"), selectedExercise.video_path || `static/videos/${selectedExercise.key}.mp4`);
     const guide = el("guide-video");
     guide.pause();
-    guide.src = `/static/videos/${selectedExercise.key}.mp4`;
+    guide.src = selectedExercise.video_path || `/static/videos/${selectedExercise.key}.mp4`;
     guide.load();
+    const startButton = el("start-button");
+    const exerciseStartButton = el("exercise-start-button");
+    startButton.disabled = !supported;
+    exerciseStartButton.disabled = !supported;
+    setText(startButton, supported ? "선택한 운동 시작" : "추후 지원 예정");
+    setText(exerciseStartButton, supported ? "이 운동 시작" : "추후 지원 예정");
     document.querySelectorAll("[data-exercise]").forEach((button) => {
         button.classList.toggle("selected-row", button.matches(".exercise-row") && button.dataset.exercise === selectedExercise.key);
         button.classList.toggle("selected-today", button.matches(".today-item") && button.dataset.exercise === selectedExercise.key);
     });
+    renderTodayExercises();
 }
 
 function chooseExercise(key) {
     selectedExercise = exercises.find((item) => item.key === key) || selectedExercise;
     currentRep = 0;
+    renderSelectedExercise();
+}
+
+async function loadDevice() {
+    const data = await fetchJSON("/api/devices/current");
+    deviceId = data.device?.id || DEFAULT_DEVICE_ID;
+}
+
+async function loadUsers() {
+    const data = await fetchJSON("/api/users");
+    users = data.users || [];
+    renderUsers();
+}
+
+async function loadExercises() {
+    const data = await fetchJSON("/api/exercises");
+    exercises = data.exercises || [];
+    selectedExercise = exercises.find(isExerciseSupported) || exercises[0] || null;
+    renderExerciseList();
     renderSelectedExercise();
 }
 
@@ -140,6 +244,13 @@ function updateDateTime() {
 }
 
 async function startCameraExercise() {
+    selectedExercise = getSelectedOrFirstExercise();
+    if (!selectedExercise) return;
+    if (!isExerciseSupported(selectedExercise)) {
+        renderSelectedExercise();
+        setText(el("feedback-text"), selectedExercise.support_message || "이 운동 분석은 추후 지원 예정입니다.");
+        return;
+    }
     showView("training-view");
     renderSelectedExercise();
     if (DEMO_MODE) {
@@ -149,7 +260,7 @@ async function startCameraExercise() {
     setText(el("exercise-state"), "STARTING");
     setText(el("camera-message"), "카메라 권한을 요청하고 있습니다.");
     try {
-        await fetch("/reset_exercise", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ exercise_key: selectedExercise.key }) });
+        await fetchJSON("/reset_exercise", { method: "POST", body: JSON.stringify({ exercise_key: selectedExercise.key }) });
         cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: CAPTURE_WIDTH }, height: { ideal: CAPTURE_HEIGHT }, facingMode: "user" }, audio: false });
         const video = el("camera-video");
         video.srcObject = cameraStream;
@@ -349,32 +460,39 @@ function applyAnalysisResult(result) {
 el("guide-video").addEventListener("loadeddata", () => { el("guide-placeholder").hidden = true; el("guide-video").hidden = false; });
 el("guide-video").addEventListener("error", () => { el("guide-video").hidden = true; el("guide-placeholder").hidden = false; });
 el("new-code-button").addEventListener("click", issuePairingCode);
-el("complete-pairing-button").addEventListener("click", () => showView("user-view"));
+el("complete-pairing-button").addEventListener("click", completePairingForDemo);
 el("change-user-button").addEventListener("click", () => showView("user-view"));
 el("start-button").addEventListener("click", startCameraExercise);
 el("exercise-start-button").addEventListener("click", startCameraExercise);
 el("return-button").addEventListener("click", () => showView("exercise-view"));
 el("user-list").addEventListener("click", (event) => { const card = event.target.closest(".user-card"); if (card) selectUser(card.dataset.userId); });
 el("exercise-list").addEventListener("click", (event) => { const row = event.target.closest(".exercise-row"); if (row) chooseExercise(row.dataset.exercise); });
-document.querySelectorAll(".today-item").forEach((button) => button.addEventListener("click", () => chooseExercise(button.dataset.exercise)));
+el("today-list").addEventListener("click", (event) => { const item = event.target.closest(".today-item"); if (item) chooseExercise(item.dataset.exercise); });
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
 
-issuePairingCode();
-updateMirrorScale();
-window.addEventListener("resize", updateMirrorScale);
-setInterval(() => {
-    pairingRemaining -= 1;
-    if (pairingRemaining <= 0) issuePairingCode();
-    updatePairingTimer();
-    // TODO: GET /api/devices/{deviceId}/pairing-status를 주기적으로 확인한다.
-}, 1000);
-renderUsers();
-renderExerciseList();
-renderSelectedExercise();
-updateDateTime();
-setInterval(updateDateTime, 1000);
+async function initializeApp() {
+    updateMirrorScale();
+    window.addEventListener("resize", updateMirrorScale);
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+    setInterval(() => {
+        pairingRemaining = Math.max(0, pairingRemaining - 1);
+        if (pairingRemaining <= 0) issuePairingCode();
+        else updatePairingTimer();
+    }, 1000);
 
-if (DEMO_MODE) {
-    selectUser("user-1");
-    runDemoFlow();
+    try {
+        await loadDevice();
+        await Promise.all([loadUsers(), loadExercises(), issuePairingCode()]);
+        pairingPollTimer = setInterval(refreshPairingStatus, PAIRING_STATUS_INTERVAL_MS);
+        if (DEMO_MODE) {
+            selectUser("user-1");
+            runDemoFlow();
+        }
+    } catch (error) {
+        setText(el("pairing-status-title"), "초기 데이터 로딩 실패");
+        setText(el("pairing-status-message"), error.message);
+    }
 }
+
+initializeApp();

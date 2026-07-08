@@ -7,10 +7,14 @@ import cv2
 import numpy as np
 from flask import Flask, jsonify, render_template, request
 
+from data_store import data_store
 from pose.exercise_feedback import analyze_exercise_frame, reset_exercise
 
 
 app = Flask(__name__)
+app.config["JSON_AS_ASCII"] = False
+if hasattr(app, "json"):
+    app.json.ensure_ascii = False
 DEBUG_MODE = os.getenv("DEBUG_MODE", "0").lower() in {"1", "true", "yes", "on"}
 _last_analysis_state = None
 MAJOR_ANALYSIS_STATES = {"STAGE_1", "STAGE_2", "STAGE_3", "COMPLETE"}
@@ -34,6 +38,48 @@ def index():
 def health():
     """Simple endpoint for Raspberry Pi connection checks."""
     return jsonify({"status": "ok"})
+
+
+@app.route("/api/devices/current")
+def current_device():
+    """Return the demo mirror device metadata."""
+    return jsonify({"success": True, "device": data_store.get_current_device()})
+
+
+@app.route("/api/devices/<device_id>/pairing-code", methods=["POST"])
+def issue_pairing_code(device_id):
+    """Create a server-side demo pairing code."""
+    return jsonify({"success": True, **data_store.create_pairing_code(device_id)})
+
+
+@app.route("/api/devices/<device_id>/pairing-status")
+def pairing_status(device_id):
+    """Return the current demo pairing state."""
+    return jsonify({"success": True, **data_store.get_pairing_status(device_id)})
+
+
+@app.route("/api/devices/<device_id>/pairing-status/demo-complete", methods=["POST"])
+def demo_complete_pairing(device_id):
+    """Presentation helper that marks the demo device as paired."""
+    return jsonify({"success": True, **data_store.complete_pairing_for_demo(device_id)})
+
+
+@app.route("/api/devices/<device_id>/users")
+def device_users(device_id):
+    """Return demo users for the selected mirror device."""
+    return jsonify({"success": True, "device_id": device_id, "users": data_store.list_users(device_id)})
+
+
+@app.route("/api/users")
+def users():
+    """Return users for the mirror UI."""
+    return jsonify({"success": True, "users": data_store.list_users()})
+
+
+@app.route("/api/exercises")
+def exercises():
+    """Return exercise metadata used by the mirror UI."""
+    return jsonify({"success": True, "exercises": data_store.list_exercises()})
 
 
 def decode_data_url_frame(frame_data_url):
