@@ -2,3 +2,42 @@ __pycache__/
 *.py[cod]
 .venv/
 .env
+.pytest_cache/
+*.log
+*.tmp
+
+# Local credentials and environment variants
+.env.*
+!.env.example
+*.local
+*.local.*
+*.pem
+*.key
+*.pfx
+*.p12
+credentials*.json
+secrets*.json
+# Database data and backups
+*.bak
+*.bacpac
+*.mdf
+*.ldf
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+# Environments, caches, build outputs
+venv/
+env/
+node_modules/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+# Downloaded model weights and archives
+*.pt
+*.onnx
+*.zip
+*.7z

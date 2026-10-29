@@ -107,11 +107,13 @@ button {
 .quick-actions button,
 .start-button,
 .exercise-view,
+.health-check-view,
 .records-view,
 .profile-view,
 .selected-panel,
 .video-stage,
 .training-panel,
+.rom-panel,
 .record-overview article,
 .record-list article,
 .profile-detail-grid article {
@@ -390,6 +392,7 @@ button {
 }
 
 .exercise-view,
+.health-check-view,
 .records-view,
 .profile-view {
     display: grid;
@@ -444,6 +447,15 @@ button {
     display: grid;
     align-content: start;
     gap: 12px;
+    padding-right: 8px;
+}
+
+.health-check-list {
+    min-height: 0;
+    overflow-y: auto;
+    display: grid;
+    align-content: start;
+    gap: 14px;
     padding-right: 8px;
 }
 
@@ -537,6 +549,85 @@ button {
     grid-template-rows: minmax(0, 1fr) 500px;
     gap: 16px;
     overflow: hidden;
+}
+
+.health-check-card {
+    width: 100%;
+    min-height: 132px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 18px;
+    padding: 22px 24px;
+    border: 1px solid rgba(125, 211, 252, 0.34);
+    border-radius: 8px;
+    background:
+        linear-gradient(135deg, rgba(14, 116, 144, 0.28), rgba(88, 28, 135, 0.16)),
+        var(--panel-soft);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+}
+
+.health-check-card:hover,
+.selected-check-row {
+    border-color: #22d3ee;
+    box-shadow: inset 0 0 28px rgba(34, 211, 238, 0.08);
+}
+
+.health-check-card span {
+    display: inline-block;
+    margin-bottom: 8px;
+    color: #67e8f9;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.health-check-card strong {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text);
+    font-size: 28px;
+    line-height: 1.2;
+}
+
+.health-check-card p {
+    margin: 0;
+    color: #dbeafe;
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.health-check-card em {
+    min-width: 108px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: rgba(14, 165, 233, 0.26);
+    color: #bae6fd;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 900;
+    text-align: center;
+}
+
+.health-check-card.is-disabled {
+    opacity: 0.62;
+}
+
+.health-check-card.is-disabled em {
+    background: rgba(100, 116, 139, 0.45);
+    color: #e2e8f0;
+}
+
+.health-selected-panel {
+    border-color: rgba(125, 211, 252, 0.34);
+    background:
+        linear-gradient(135deg, rgba(8, 47, 73, 0.38), rgba(49, 46, 129, 0.18)),
+        var(--panel);
+}
+
+.training-view.rom-mode {
+    grid-template-rows: minmax(0, 1fr) 650px;
 }
 
 .video-stage {
@@ -672,6 +763,31 @@ button {
     z-index: 5;
 }
 
+.training-view.rom-mode .video-stage {
+    background:
+        radial-gradient(circle at 24% 26%, rgba(34, 211, 238, 0.15), transparent 32%),
+        radial-gradient(circle at 82% 64%, rgba(139, 92, 246, 0.12), transparent 34%),
+        #061018;
+}
+
+.training-view.rom-mode .guide-video,
+.training-view.rom-mode .guide-placeholder {
+    opacity: 0.38;
+}
+
+.training-view.rom-mode .guide-video {
+    pointer-events: none;
+}
+
+.training-view.rom-mode .camera-preview {
+    top: 50%;
+    right: 54px;
+    width: 420px;
+    transform: translateY(-50%);
+    border-color: rgba(125, 211, 252, 0.9);
+    box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.3), 0 24px 54px rgba(8, 47, 73, 0.5);
+}
+
 .mirror-corners span {
     position: absolute;
     width: 80px;
@@ -692,6 +808,11 @@ button {
     gap: 12px;
     padding: 16px;
     overflow: hidden;
+}
+
+.training-panel[hidden],
+.rom-panel[hidden] {
+    display: none;
 }
 
 .training-info,
@@ -759,6 +880,307 @@ button {
 
 .return-button {
     font-size: 20px;
+}
+
+.rom-panel {
+    display: grid;
+    grid-template-columns: 1.08fr 0.92fr;
+    grid-template-rows: 96px 64px minmax(0, 1fr) 86px;
+    gap: 12px;
+    padding: 16px;
+    overflow: hidden;
+    background:
+        linear-gradient(135deg, rgba(8, 47, 73, 0.92), rgba(49, 46, 129, 0.5)),
+        #172033;
+}
+
+.rom-header,
+.rom-flow,
+.rom-measurement,
+.rom-result-card,
+.rom-actions {
+    min-width: 0;
+}
+
+.rom-header {
+    grid-column: 1 / 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 18px 22px;
+    border: 1px solid rgba(125, 211, 252, 0.28);
+    border-radius: 8px;
+    background: rgba(2, 6, 23, 0.34);
+}
+
+.rom-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 12px;
+    border: 1px solid rgba(34, 211, 238, 0.42);
+    border-radius: 999px;
+    color: #67e8f9;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.rom-header h2 {
+    margin: 8px 0 4px;
+    font-size: 31px;
+    line-height: 1.05;
+}
+
+.rom-header p {
+    margin: 0;
+    color: #dbeafe;
+    font-size: 17px;
+    line-height: 1.35;
+}
+
+#rom-phase-label {
+    flex: 0 0 auto;
+    min-width: 142px;
+    padding: 16px 18px;
+    border-radius: 8px;
+    background: rgba(14, 165, 233, 0.2);
+    color: #bae6fd;
+    font-size: 24px;
+    text-align: center;
+}
+
+.rom-flow {
+    grid-column: 1 / 3;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.rom-flow-step {
+    display: grid;
+    place-items: center;
+    min-height: 60px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.58);
+    color: #cbd5e1;
+    font-size: 19px;
+    font-weight: 900;
+}
+
+.rom-flow-step.active {
+    border-color: rgba(34, 211, 238, 0.78);
+    background: rgba(14, 116, 144, 0.38);
+    color: #ecfeff;
+    box-shadow: inset 0 0 24px rgba(34, 211, 238, 0.16);
+}
+
+.rom-measurement {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 12px;
+}
+
+.rom-gauge-wrap,
+.rom-metrics,
+.rom-result-card {
+    border: 1px solid rgba(125, 211, 252, 0.24);
+    border-radius: 8px;
+    background: rgba(2, 6, 23, 0.42);
+}
+
+.rom-gauge-wrap {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 14px;
+    padding: 16px;
+}
+
+.rom-gauge {
+    position: relative;
+    width: 288px;
+    height: 164px;
+    overflow: hidden;
+    border-radius: 164px 164px 10px 10px;
+    background: conic-gradient(
+        from 270deg at 50% 100%,
+        #22d3ee 0deg var(--rom-current),
+        rgba(167, 139, 250, 0.78) var(--rom-current) var(--rom-max),
+        rgba(148, 163, 184, 0.2) var(--rom-max) 180deg,
+        transparent 180deg 360deg
+    );
+    box-shadow: inset 0 -8px 22px rgba(2, 6, 23, 0.75), 0 0 34px rgba(34, 211, 238, 0.14);
+}
+
+.rom-gauge::after {
+    content: "";
+    position: absolute;
+    left: 42px;
+    right: 42px;
+    bottom: 0;
+    height: 88px;
+    border-radius: 100px 100px 8px 8px;
+    background: #07111f;
+}
+
+.rom-gauge-inner {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 14px;
+    z-index: 1;
+    text-align: center;
+}
+
+.rom-gauge-inner span {
+    display: block;
+    color: #bae6fd;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.rom-gauge-inner strong {
+    display: block;
+    margin-top: 6px;
+    color: #ecfeff;
+    font-size: 50px;
+    line-height: 1;
+}
+
+.rom-gauge-scale {
+    width: 288px;
+    display: flex;
+    justify-content: space-between;
+    color: #93c5fd;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.rom-metrics {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+}
+
+.rom-metrics div {
+    display: grid;
+    align-content: center;
+    min-height: 82px;
+    padding: 12px 14px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.48);
+}
+
+.rom-metrics span,
+.rom-result-card span {
+    display: block;
+    margin-bottom: 8px;
+    color: #bfdbfe;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.rom-metrics strong {
+    color: #f8fafc;
+    font-size: 32px;
+    line-height: 1;
+}
+
+.rom-result-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 22px;
+    border-left: 5px solid #38bdf8;
+}
+
+.rom-result-card strong {
+    display: block;
+    color: #f8fafc;
+    font-size: 34px;
+    line-height: 1.1;
+}
+
+.rom-result-card p {
+    margin: 0;
+    color: #dbeafe;
+    font-size: 22px;
+    line-height: 1.35;
+}
+
+.rom-result-card small {
+    color: #94a3b8;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.rom-status-normal .rom-result-card,
+.rom-result-card.rom-status-normal {
+    border-left-color: #34d399;
+}
+
+.rom-status-normal #rom-status {
+    color: #86efac;
+}
+
+.rom-status-caution .rom-result-card,
+.rom-result-card.rom-status-caution {
+    border-left-color: #f59e0b;
+}
+
+.rom-status-caution #rom-status {
+    color: #fbbf24;
+}
+
+.rom-status-fail .rom-result-card,
+.rom-result-card.rom-status-fail {
+    border-left-color: #fb7185;
+}
+
+.rom-status-fail #rom-status {
+    color: #fda4af;
+}
+
+.rom-actions {
+    grid-column: 1 / 3;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.rom-actions button {
+    min-width: 0;
+    min-height: 74px;
+    padding: 0 18px;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.rom-actions button[hidden] {
+    display: none;
+}
+
+.rom-primary-button {
+    border: 0;
+    background: linear-gradient(135deg, #0891b2, #7c3aed);
+    color: #fff;
+}
+
+.rom-secondary-button {
+    border: 1px solid rgba(125, 211, 252, 0.58);
+    background: rgba(14, 116, 144, 0.26);
+    color: #e0f2fe;
+}
+
+.rom-ghost-button {
+    border: 1px solid rgba(148, 163, 184, 0.34);
+    background: rgba(15, 23, 42, 0.38);
+    color: #cbd5e1;
 }
 
 /* Device pairing and user selection flow */
@@ -849,7 +1271,11 @@ button {
 }
 
 .start-button:disabled,
-.primary-button:disabled {
+.primary-button:disabled,
+.return-button:disabled,
+.rom-primary-button:disabled,
+.rom-secondary-button:disabled,
+.rom-ghost-button:disabled {
     border-color: rgba(148, 163, 184, 0.45);
     background: #64748b;
     color: #e2e8f0;
@@ -907,7 +1333,11 @@ button {
 .user-copy em { display: block; color: #86efac; font-size: 23px; font-style: normal; font-weight: 800; }
 .user-card b { padding: 12px 20px; border-radius: 999px; background: rgba(16, 185, 129, 0.18); color: #86efac; font-size: 20px; }
 
-.home-view { grid-template-rows: 164px 154px 690px 1fr; }
-.quick-actions { grid-template-rows: repeat(2, 1fr); }
+.home-view { grid-template-rows: 164px 154px 650px 1fr; }
+.quick-actions { grid-template-rows: repeat(4, 1fr); }
 .selected-panel .primary-button { width: 100%; margin-top: 18px; }
 #capture-canvas { display: none; }
+
+#tracking-overlay { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+#confirm-target-button { position: absolute; bottom: 12px; left: 12px; z-index: 5; padding: 10px 14px; border-radius: 12px; background: #fff; color: #16352d; }
+#tracking-overlay[hidden], #confirm-target-button[hidden] { display: none; }

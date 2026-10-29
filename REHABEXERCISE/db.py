@@ -130,3 +130,12 @@ class MSSQLDatabase:
             cursor.execute(sql, *(params or []))
             conn.commit()
             return cursor.rowcount
+
+    def execute_returning_one(self, sql, params=None):
+        with self.connect() as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql, *(params or []))
+            columns = [column[0] for column in cursor.description]
+            row = cursor.fetchone()
+            conn.commit()
+            return dict(zip(columns, row)) if row else None

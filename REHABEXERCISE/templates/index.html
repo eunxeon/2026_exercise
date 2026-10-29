@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rehab Mirror</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260708-api-demo">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260723-health-check">
 </head>
 <body>
 <main class="mirror-screen">
@@ -51,40 +51,106 @@
                 <button type="button" class="start-button" id="start-button">선택한 운동 시작</button>
             </section>
             <section class="quick-actions">
-                <button type="button" data-view="exercise-view"><span>운동 선택</span><strong>전체 재활 운동 목록</strong><p>운동 종류와 목표 횟수를 확인합니다.</p></button>
+                <button type="button" data-view="exercise-view"><span id="home-rehab-count">질환 예방 운동</span><strong>질환 예방 운동</strong><p>운동 종류와 목표 횟수를 확인합니다.</p></button>
+                <button type="button" data-view="health-check-view"><span id="home-health-count">건강 체크</span><strong>건강 체크</strong><p>관절 가동 범위와 건강 상태를 점검합니다.</p></button>
+                <button type="button" id="records-button"><span>운동 기록</span><strong>운동 기록</strong><p>저장된 운동과 점검 결과를 확인합니다.</p></button>
                 <button type="button" id="change-user-button"><span>사용자 변경</span><strong>다른 사용자 선택</strong><p>등록된 사용자 목록으로 돌아갑니다.</p></button>
             </section>
         </section>
 
         <section class="exercise-view app-view" id="exercise-view">
-            <header class="subview-header"><button type="button" class="back-button" data-view="home-view">메인으로</button><div><span>운동 선택</span><h2>재활 운동 목록</h2></div><strong id="exercise-count">0개</strong></header>
+            <header class="subview-header"><button type="button" class="back-button" data-view="home-view">메인으로</button><div><span>운동 선택</span><h2>질환 예방 운동 목록</h2></div><strong id="exercise-count">0개</strong></header>
             <div class="exercise-list" id="exercise-list"></div>
             <aside class="selected-panel"><span>선택한 운동</span><strong id="selected-title"></strong><p id="selected-description"></p><button type="button" class="primary-button" id="exercise-start-button">이 운동 시작</button></aside>
         </section>
 
+        <section class="health-check-view app-view" id="health-check-view">
+            <header class="subview-header"><button type="button" class="back-button" data-view="home-view">메인으로</button><div><span>건강 체크</span><h2>건강 체크 목록</h2></div><strong id="health-check-count">0개</strong></header>
+            <div class="health-check-list" id="health-check-list"></div>
+            <aside class="selected-panel health-selected-panel"><span>선택한 점검</span><strong id="selected-check-title"></strong><p id="selected-check-description"></p><button type="button" class="primary-button" id="health-check-start-button">점검 시작</button></aside>
+        </section>
+
+        <section class="records-view app-view" id="records-view">
+            <header class="subview-header"><button type="button" class="back-button" data-view="home-view">메인으로</button><div><span>운동 기록</span><h2>저장된 기록</h2></div><strong id="record-total-count">0개</strong></header>
+            <section class="record-overview">
+                <article><span>사용자</span><strong id="record-user-name">--</strong></article>
+                <article><span>최근 기록</span><strong id="record-latest-key">--</strong></article>
+                <article><span>평균 정확도</span><strong id="record-latest-accuracy">--%</strong></article>
+            </section>
+            <div class="record-list" id="record-list"></div>
+        </section>
+
         <section class="training-view app-view" id="training-view">
             <section class="video-stage">
-                <video id="guide-video" class="guide-video" controls loop playsinline></video>
+                <video id="guide-video" class="guide-video" controls loop playsinline preload="auto"></video>
                 <div class="guide-placeholder" id="guide-placeholder"><span>운동 가이드 영상</span><strong id="guide-title"></strong><p><code id="guide-path"></code> 파일이 있으면 이곳에서 재생됩니다.</p></div>
                 <aside class="camera-preview" aria-label="실시간 카메라 화면">
                     <video id="camera-video" class="camera-video" autoplay muted playsinline></video>
+                    <canvas id="tracking-overlay" hidden aria-hidden="true"></canvas>
                     <div class="video-fallback" id="camera-placeholder"><span>카메라 대기</span><strong id="fallback-title"></strong><p>카메라 권한을 허용해주세요.</p></div>
                     <div class="camera-preview-label">내 자세</div>
+                    <button type="button" id="confirm-target-button" hidden>운동자 재확인 · 새 측정</button>
                 </aside>
                 <canvas id="capture-canvas" width="480" height="360"></canvas>
                 <div class="mirror-corners"><span></span><span></span><span></span><span></span></div>
             </section>
-            <section class="training-panel">
-                <article class="training-info"><span>오늘의 재활 운동</span><h2 id="exercise-title"></h2><p id="exercise-description"></p></article>
+            <section class="training-panel" id="training-panel">
+                <article class="training-info"><span>오늘의 질환 예방 운동</span><h2 id="exercise-title"></h2><p id="exercise-description"></p></article>
                 <article class="rep-box"><span id="exercise-state">READY</span><strong id="rep-counter">0 / 15</strong><p id="camera-message">운동 시작 시 카메라 화면이 표시됩니다.</p></article>
                 <article class="metric-box"><span>정확도</span><strong id="accuracy-value">--%</strong></article>
                 <article class="metric-box"><span>현재 / 목표 각도</span><strong id="angle-value">-- / --°</strong></article>
                 <article class="feedback-box"><span>실시간 피드백</span><p id="feedback-text">통증이 있으면 즉시 중단하고 보호자에게 알려주세요.</p></article>
-                <button type="button" class="return-button" id="return-button">운동 선택으로</button>
+                <button type="button" class="return-button" id="return-button">운동 종료 및 저장</button>
+            </section>
+            <section class="rom-panel" id="rom-panel" hidden>
+                <header class="rom-header">
+                    <div>
+                        <span class="rom-badge">측정 모드 · ROM CHECK</span>
+                        <h2 id="rom-title">관절 가동 범위 점검</h2>
+                        <p id="rom-description">카메라로 어깨 관절 움직임을 인식하여 가동 범위를 확인합니다.</p>
+                    </div>
+                    <strong id="rom-phase-label">준비</strong>
+                </header>
+                <div class="rom-flow" aria-label="관절 가동 범위 점검 단계">
+                    <span class="rom-flow-step active" id="rom-step-ready">준비</span>
+                    <span class="rom-flow-step" id="rom-step-measuring">측정 중</span>
+                    <span class="rom-flow-step" id="rom-step-result">결과 확인</span>
+                </div>
+                <section class="rom-measurement">
+                    <article class="rom-gauge-wrap">
+                        <div class="rom-gauge" id="rom-gauge" style="--rom-current: 0deg; --rom-max: 0deg;">
+                            <div class="rom-gauge-inner">
+                                <span>현재 각도</span>
+                                <strong id="rom-current-angle">--°</strong>
+                            </div>
+                        </div>
+                        <div class="rom-gauge-scale"><span>0°</span><span>90°</span><span>180°</span></div>
+                    </article>
+                    <article class="rom-metrics">
+                        <div><span>최대 각도</span><strong id="rom-max-angle">--°</strong></div>
+                        <div><span>판정 결과</span><strong id="rom-status">측정 전</strong></div>
+                        <div><span>기준값</span><strong id="rom-threshold">120° 이상</strong></div>
+                    </article>
+                </section>
+                <section class="rom-result-card" id="rom-result-card">
+                    <div>
+                        <span>측정 결과</span>
+                        <strong id="rom-result-max">최대 가동 범위 --°</strong>
+                    </div>
+                    <p id="rom-result-message">의자에 바르게 앉거나 선 자세를 유지한 뒤, 한쪽 팔을 천천히 들어올려주세요.</p>
+                    <small>본 결과는 운동 보조용 참고 정보이며 의학적 진단이 아닙니다.</small>
+                </section>
+                <div class="rom-actions">
+                    <button type="button" class="rom-primary-button" id="rom-start-button">측정 시작</button>
+                    <button type="button" class="rom-secondary-button" id="rom-stop-button" hidden>측정 종료</button>
+                    <button type="button" class="rom-secondary-button" id="rom-retry-button" hidden>다시 측정</button>
+                    <button type="button" class="rom-primary-button" id="rom-save-button" hidden>결과 저장</button>
+                    <button type="button" class="rom-ghost-button" id="rom-back-button">건강 체크로 돌아가기</button>
+                </div>
             </section>
         </section>
     </section>
 </main>
-<script src="{{ url_for('static', filename='js/main.js') }}?v=20260708-api-demo"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}?v=20260723-health-check"></script>
 </body>
 </html>

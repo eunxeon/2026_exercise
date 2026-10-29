@@ -2,6 +2,12 @@ import time
 
 import numpy as np
 
+from pose.analysis_states import (
+    INVALID_EXERCISE_ANALYSIS_STATES,
+    LOW_VISIBILITY_STATE,
+    NO_PERSON_STATE,
+    UNAVAILABLE_EXERCISE_FEEDBACK,
+)
 from pose.pose_detector import detect_pose
 
 
@@ -196,8 +202,6 @@ class SequentialExerciseTracker:
         self.last_update = time.monotonic()
 
     def analyze(self, landmarks):
-        if time.monotonic() - self.last_update > 5.0:
-            self.reset()
         self.last_update = time.monotonic()
 
         if self.completed:
@@ -302,12 +306,8 @@ def _unavailable_result(state, feedback):
 
 def analyze_exercise_frame(frame, exercise_key="shoulder"):
     pose = detect_pose(frame)
-    if pose["state"] == "NO_PERSON":
-        return _unavailable_result(
-            "NO_PERSON", "카메라에 머리부터 허리까지 보이도록 앉아주세요."
-        )
-    if pose["state"] == "LOW_VISIBILITY":
-        return _unavailable_result(
-            "LOW_VISIBILITY", "양팔과 얼굴이 잘 보이도록 카메라 위치를 조정해주세요."
-        )
-    return _shoulder_tracker.analyze(pose["landmarks"])
+    metadata = {"tracking": pose.get("tracking", {}), "analysis_valid": pose.get("analysis_valid", True)}
+    if pose["state"] in INVALID_EXERCISE_ANALYSIS_STATES:
+        _shoulder_tracker.hold_count = 0
+        return {**_unavailable_result(pose["state"], UNAVAILABLE_EXERCISE_FEEDBACK[pose["state"]]), **metadata}
+    return {**_shoulder_tracker.analyze(pose["landmarks"]), **metadata}

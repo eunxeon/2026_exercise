@@ -22,7 +22,6 @@ ON target.mirror_id = source.mirror_id
 WHEN MATCHED THEN
     UPDATE SET
         device_name = source.device_name,
-        pairing_status = source.pairing_status,
         updated_at = SYSUTCDATETIME()
 WHEN NOT MATCHED THEN
     INSERT (mirror_id, device_name, pairing_code, pairing_status, paired_user_id)
@@ -40,16 +39,25 @@ USING (VALUES
     (
         N'shoulder',
         N'앉아서 양팔 들고 몸통 돌리기',
-        N'어깨·몸통 재활',
+        N'어깨·몸통 예방 운동',
         N'의자에 앉아 양팔을 들고 몸통을 좌우로 천천히 움직입니다.',
         N'/static/videos/shoulder.mp4',
         CAST(1 AS BIT),
         N'분석 가능'
     ),
     (
+        N'rom_shoulder',
+        N'관절 가동 범위 점검',
+        N'관절 가동 범위',
+        N'카메라로 어깨 관절 움직임을 인식하여 가동 범위를 확인합니다.',
+        N'/static/videos/rom_shoulder_demo.mp4',
+        CAST(1 AS BIT),
+        N'점검 가능'
+    ),
+    (
         N'knee',
         N'무릎 굽혔다 펴기',
-        N'무릎 재활',
+        N'무릎 질환 예방',
         N'무릎을 안정적으로 굽혔다 펴며 하체 움직임을 확인합니다.',
         N'/static/videos/knee.mp4',
         CAST(0 AS BIT),
